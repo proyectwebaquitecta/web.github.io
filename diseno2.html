@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulación de Casa Mejorada</title>
+  <style>
+    body {
+      background-color: #87CEEB;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    .mundo {
+      position: relative;
+      width: 1000px;
+      height: 600px;
+      background: linear-gradient(to bottom, #87CEEB 60%, #228B22);
+    }
+
+    .casa {
+      width: 800px;
+      height: 500px;
+      background: #F5DEB3;
+      border: 15px solid #8B4513;
+      position: absolute;
+      top: 50px;
+      left: 100px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    }
+
+    /* Techo */
+    .techo {
+      position: absolute;
+      top: -80px;
+      left: -15px;
+      width: 830px;
+      height: 100px;
+      background: #8B0000;
+      clip-path: polygon(0% 100%, 50% 0%, 100% 100%);
+    }
+
+    /* Habitaciones */
+    .habitacion {
+      position: absolute;
+      border: 2px solid #666;
+      background: #FAF0E6;
+      box-sizing: border-box;
+      transition: background-color 0.3s;
+    }
+
+    .sala {
+      top: 20px;
+      left: 20px;
+      width: 400px;
+      height: 250px;
+    }
+
+    .cocina {
+      top: 20px;
+      left: 440px;
+      width: 340px;
+      height: 200px;
+      background: #FFF8DC;
+    }
+
+    .dormitorio {
+      top: 290px;
+      left: 20px;
+      width: 300px;
+      height: 190px;
+      background: #E6E6FA;
+    }
+
+    .bano {
+      top: 290px;
+      left: 340px;
+      width: 200px;
+      height: 190px;
+      background: #F0FFFF;
+    }
+
+    .jardin {
+      top: 290px;
+      left: 560px;
+      width: 220px;
+      height: 190px;
+      background: #90EE90;
+      border: 2px dashed #228B22;
+    }
+
+    /* Puertas */
+    .puerta {
+      width: 40px;
+      height: 80px;
+      background: #8B4513;
+      position: absolute;
+      transform-origin: left center;
+      transition: transform 0.5s ease-in-out;
+      cursor: pointer;
+      border: 3px solid #000;
+      z-index: 10;
+    }
+
+    .puerta-sala {
+      bottom: 20px;
+      left: 420px;
+    }
+
+    .puerta-dormitorio {
+      top: 290px;
+      left: 320px;
+      transform: rotate(90deg);
+      transform-origin: top center;
+    }
+
+    .puerta-bano {
+      top: 290px;
+      left: 540px;
+      transform: rotate(90deg);
+      transform-origin: top center;
+    }
+
+    .puerta-jardin {
+      bottom: 20px;
+      left: 560px;
+    }
+
+    .puerta.abierta {
+      transform: rotateY(120deg);
+    }
+
+    .puerta-dormitorio.abierta, .puerta-bano.abierta {
+      transform: rotate(90deg) rotateY(120deg);
+    }
+
+    /* Ventanas */
+    .ventana {
+      position: absolute;
+      background: #ADD8E6;
+      border: 3px solid #000;
+      cursor: pointer;
+    }
+
+    .ventana-sala1 {
+      top: 40px;
+      left: 100px;
+      width: 80px;
+      height: 60px;
+    }
+
+    .ventana-sala2 {
+      top: 40px;
+      right: 100px;
+      width: 80px;
+      height: 60px;
+    }
+
+    .ventana-cocina {
+      top: 40px;
+      right: 40px;
+      width: 60px;
+      height: 60px;
+    }
+
+    .ventana-dormitorio {
+      top: 320px;
+      left: 60px;
+      width: 80px;
+      height: 60px;
+    }
+
+    .ventana.abierta {
+      background: rgba(173, 216, 230, 0.3);
+      box-shadow: inset 0 0 10px #FFFF00;
+    }
+
+    /* Muebles y objetos */
+    .mueble {
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .sofa {
+      width: 120px;
+      height: 60px;
+      background: #A0522D;
+      top: 150px;
+      left: 100px;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .mesa {
+      width: 80px;
+      height: 50px;
+      background: #D2B48C;
+      top: 160px;
+      left: 250px;
+      border-radius: 5px;
+    }
+
+    .cama {
+      width: 120px;
+      height: 80px;
+      background: #4169E1;
+      top: 350px;
+      left: 60px;
+      border-radius: 5px;
+    }
+
+    .nevera {
+      width: 60px;
+      height: 100px;
+      background: #FFFFFF;
+      top: 60px;
+      left: 460px;
+      border: 3px solid #000;
+    }
+
+    .lavabo {
+      width: 50px;
+      height: 40px;
+      background: #FFFFFF;
+      top: 320px;
+      left: 370px;
+      border: 2px solid #000;
+      border-radius: 5px;
+    }
+
+    .arbol {
+      width: 40px;
+      height: 80px;
+      background: #8B4513;
+      top: 380px;
+      left: 620px;
+    }
+
+    .copa {
+      width: 80px;
+      height: 60px;
+      background: #006400;
+      border-radius: 50%;
+      position: absolute;
+      top: 340px;
+      left: 600px;
+    }
+
+    /* Personaje */
+    .personaje {
+      width: 20px;
+      height: 40px;
+      background: #FF0000;
+      position: absolute;
+      top: 200px;
+      left: 450px;
+      border-radius: 50% 50% 0 0;
+      transition: all 0.5s ease;
+      z-index: 20;
+    }
+
+    /* Controles */
+    .controles {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255,255,255,0.7);
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 100;
+    }
+
+    button {
+      margin: 5px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    /* Etiquetas */
+    .etiqueta {
+      position: absolute;
+      color: #000;
+      font-weight: bold;
+      font-size: 14px;
+      pointer-events: none;
+      background: rgba(255,255,255,0.7);
+      padding: 2px 5px;
+      border-radius: 3px;
+    }
+
+    .etiqueta-sala { top: 30px; left: 30px; }
+    .etiqueta-cocina { top: 30px; left: 450px; }
+    .etiqueta-dormitorio { top: 300px; left: 30px; }
+    .etiqueta-bano { top: 300px; left: 350px; }
+    .etiqueta-jardin { top: 300px; left: 570px; }
+
+    /* Luces */
+    .luz {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #FFFF00;
+      border-radius: 50%;
+      box-shadow: 0 0 10px 5px #FFFF00;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .luz-sala {
+      top: 30px;
+      left: 200px;
+    }
+
+    .luz-cocina {
+      top: 40px;
+      left: 500px;
+    }
+
+    .luz-dormitorio {
+      top: 310px;
+      left: 100px;
+    }
+
+    .luz-bano {
+      top: 310px;
+      left: 380px;
+    }
+
+    .luz-activa {
+      opacity: 0.7;
+    }
+
+    /* Efecto noche */
+    .noche {
+      background: linear-gradient(to bottom, #00008B 60%, #003300);
+    }
+
+    .noche .casa {
+      box-shadow: 0 0 30px rgba(255,255,255,0.2);
+    }
+
+    .noche .habitacion {
+      background: #555;
+    }
+
+    .noche .ventana {
+      background: #333;
+    }
+
+    .noche .ventana.abierta {
+      background: rgba(255, 255, 0, 0.3);
+      box-shadow: inset 0 0 10px #FFFF00;
+    }
+
+    /* Sol/luna */
+    .sol {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      background: #FFD700;
+      border-radius: 50%;
+      top: 50px;
+      right: 50px;
+      box-shadow: 0 0 30px #FFD700;
+      transition: all 1s ease;
+      cursor: pointer;
+    }
+
+    .luna {
+      background: #FFFFFF;
+      box-shadow: 0 0 30px #FFFFFF;
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    }
+
+     
+      .mini-back-button {
+    width: 200px;
+    height: 200px;
+    
+    background-color: #4CAF50; /* Color verde */
+    color: white;
+    border: none;
+    border-radius: 0px;
+    cursor: pointer;
+    transition: background-color 0.3s; /* Transición suave */
+    
+    /* Posicionamiento */
+    position: fixed; /* o 'absolute' dependiendo de tu layout */
+    top: 0;
+    left: 0;
+    margin: 0; /* Para asegurar que no haya márgenes no deseados */
+}
+
+.mini-back-button:hover {
+    background-color: #45a049; /* Color más oscuro al pasar el cursor */
+}
+  </style>
+  <button class="mini-back-button" onclick="window.location.href='index.html'">
+    <h1>
+Volver atrás
+    </h1>
+</button>
+</head>
+<body>
+<div class="mundo">
+  <div class="sol" onclick="toggleDiaNoche()"></div>
+  
+  <div class="casa">
+    <div class="techo"></div>
+    
+    <!-- Habitaciones -->
+    <div class="habitacion sala">
+      <div class="luz luz-sala"></div>
+    </div>
+    <div class="habitacion cocina">
+      <div class="luz luz-cocina"></div>
+    </div>
+    <div class="habitacion dormitorio">
+      <div class="luz luz-dormitorio"></div>
+    </div>
+    <div class="habitacion bano">
+      <div class="luz luz-bano"></div>
+    </div>
+    <div class="habitacion jardin"></div>
+    
+    <!-- Puertas -->
+    <div class="puerta puerta-sala" onclick="togglePuerta(this)"></div>
+    <div class="puerta puerta-dormitorio" onclick="togglePuerta(this)"></div>
+    <div class="puerta puerta-bano" onclick="togglePuerta(this)"></div>
+    <div class="puerta puerta-jardin" onclick="togglePuerta(this)"></div>
+    
+    <!-- Ventanas -->
+    <div class="ventana ventana-sala1" onclick="toggleVentana(this)"></div>
+    <div class="ventana ventana-sala2" onclick="toggleVentana(this)"></div>
+    <div class="ventana ventana-cocina" onclick="toggleVentana(this)"></div>
+    <div class="ventana ventana-dormitorio" onclick="toggleVentana(this)"></div>
+    
+    <!-- Muebles -->
+    <div class="mueble sofa"></div>
+    <div class="mueble mesa"></div>
+    <div class="mueble cama"></div>
+    <div class="mueble nevera"></div>
+    <div class="mueble lavabo"></div>
+    <div class="mueble arbol"></div>
+    <div class="mueble copa"></div>
+    
+    <!-- Personaje -->
+    <div class="personaje" id="personaje"></div>
+    
+    <!-- Etiquetas -->
+    <div class="etiqueta etiqueta-sala">Sala de Estar</div>
+    <div class="etiqueta etiqueta-cocina">Cocina</div>
+    <div class="etiqueta etiqueta-dormitorio">Dormitorio</div>
+    <div class="etiqueta etiqueta-bano">Baño</div>
+    <div class="etiqueta etiqueta-jardin">Jardín</div>
+  </div>
+  
+  <div class="controles">
+    <h3>Controles</h3>
+    <button onclick="moverPersonaje('arriba')">↑ Arriba</button><br>
+    <button onclick="moverPersonaje('izquierda')">← Izquierda</button>
+    <button onclick="moverPersonaje('derecha')">→ Derecha</button><br>
+    <button onclick="moverPersonaje('abajo')">↓ Abajo</button><br>
+    <button onclick="toggleLuces()">Encender/Apagar Luces</button>
+    <button onclick="toggleDiaNoche()">Día/Noche</button>
+  </div>
+</div>
+
+<script>
+  // Estado de las luces
+  let lucesEncendidas = false;
+  
+  // Toggle puertas
+  function togglePuerta(puerta) {
+    puerta.classList.toggle('abierta');
+  }
+  
+  // Toggle ventanas
+  function toggleVentana(ventana) {
+    ventana.classList.toggle('abierta');
+  }
+  
+  // Toggle luces
+  function toggleLuces() {
+    lucesEncendidas = !lucesEncendidas;
+    const luces = document.querySelectorAll('.luz');
+    luces.forEach(luz => {
+      if (lucesEncendidas) {
+        luz.classList.add('luz-activa');
+      } else {
+        luz.classList.remove('luz-activa');
+      }
+    });
+  }
+  
+  // Toggle día/noche
+  function toggleDiaNoche() {
+    document.querySelector('.mundo').classList.toggle('noche');
+    document.querySelector('.sol').classList.toggle('luna');
+  }
+  
+  // Mover personaje
+  function moverPersonaje(direccion) {
+    const personaje = document.getElementById('personaje');
+    let top = parseInt(personaje.style.top || '200px');
+    let left = parseInt(personaje.style.left || '450px');
+    
+    switch(direccion) {
+      case 'arriba':
+        top = Math.max(20, top - 20);
+        break;
+      case 'abajo':
+        top = Math.min(460, top + 20);
+        break;
+      case 'izquierda':
+        left = Math.max(20, left - 20);
+        break;
+      case 'derecha':
+        left = Math.min(780, left + 20);
+        break;
+    }
+    
+    personaje.style.top = top + 'px';
+    personaje.style.left = left + 'px';
+  }
+  
+  // Control por teclado
+  document.addEventListener('keydown', (e) => {
+    switch(e.key) {
+      case 'ArrowUp':
+        moverPersonaje('arriba');
+        break;
+      case 'ArrowDown':
+        moverPersonaje('abajo');
+        break;
+      case 'ArrowLeft':
+        moverPersonaje('izquierda');
+        break;
+      case 'ArrowRight':
+        moverPersonaje('derecha');
+        break;
+      case 'l':
+        toggleLuces();
+        break;
+      case 'n':
+        toggleDiaNoche();
+        break;
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trailer Interactivo: Ciudad y Colegio Misterioso</title>
+    <style>
+        /* Reset y estilos base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow-x: hidden;
+            background: linear-gradient(to bottom, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            height: 100vh;
+            perspective: 1000px;
+        }
+        
+        /* Contenedor principal */
+        .trailer-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Escena de ciudad */
+        .city-scene {
+            position: absolute;
+            bottom: 0;
+            width: 300%;
+            height: 60%;
+            background: linear-gradient(to top, #333, #666);
+            transform-origin: bottom;
+            animation: cityMove 30s linear infinite;
+        }
+        
+        /* Edificios */
+        .building {
+            position: absolute;
+            bottom: 0;
+            background: linear-gradient(to top, #1a1a1a, #4d4d4d);
+            border-top: 2px solid #666;
+        }
+        
+        /* Sol */
+        .sun {
+            position: absolute;
+            top: 15%;
+            left: 10%;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #ffde00, #ff8c00);
+            border-radius: 50%;
+            box-shadow: 0 0 50px #ff8c00;
+            animation: sunGlow 5s infinite alternate;
+            z-index: 1;
+            transition: transform 0.5s ease;
+        }
+        
+        /* Nubes */
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            filter: blur(1px);
+            z-index: 2;
+            transition: transform 0.5s ease;
+        }
+        
+        /* Calle */
+        .street {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 20%;
+            background: #333;
+        }
+        
+        /* Líneas de la calle */
+        .street-line {
+            position: absolute;
+            bottom: 45%;
+            width: 100px;
+            height: 10px;
+            background: white;
+            animation: streetLineMove 2s linear infinite;
+        }
+        
+        /* Autos */
+        .car {
+            position: absolute;
+            bottom: 22%;
+            width: 80px;
+            height: 40px;
+            background: red;
+            border-radius: 10px 10px 0 0;
+            animation: carMove 10s linear infinite;
+        }
+        
+        .car:before, .car:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            width: 20px;
+            height: 15px;
+            background: #333;
+            border-radius: 50%;
+        }
+        
+        .car:before { left: 5px; }
+        .car:after { right: 5px; }
+        
+        /* Motos */
+        .moto {
+            position: absolute;
+            bottom: 20%;
+            width: 50px;
+            height: 30px;
+            background: blue;
+            border-radius: 20px 5px 0 0;
+            animation: motoMove 8s linear infinite;
+        }
+        
+        .moto:before, .moto:after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            width: 10px;
+            height: 10px;
+            background: #333;
+            border-radius: 50%;
+        }
+        
+        .moto:before { left: 5px; }
+        .moto:after { right: 5px; }
+        
+        /* Efecto de viento */
+        .wind {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .wind-particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: windMove 10s linear infinite;
+        }
+        
+        /* Texto del trailer */
+        .trailer-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 5;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            animation: textFade 15s infinite;
+        }
+        
+        .trailer-title {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #ffde00;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        .trailer-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        /* Botón interactivo */
+        .trailer-btn {
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+        
+        .trailer-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Animaciones */
+        @keyframes cityMove {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-66%); }
+        }
+        
+        @keyframes sunGlow {
+            0% { box-shadow: 0 0 50px #ff8c00; }
+            100% { box-shadow: 0 0 80px #ff4500; }
+        }
+        
+        @keyframes streetLineMove {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-120px); }
+        }
+        
+        @keyframes carMove {
+            0% { transform: translateX(-100px); }
+            100% { transform: translateX(calc(100vw + 100px)); }
+        }
+        
+        @keyframes motoMove {
+            0% { transform: translateX(-100px); }
+            100% { transform: translateX(calc(100vw + 100px)); }
+        }
+        
+        @keyframes windMove {
+            0% { transform: translateX(0) translateY(0); opacity: 0; }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.5; }
+            100% { transform: translateX(100vw) translateY(-100vh); opacity: 0; }
+        }
+        
+        @keyframes textFade {
+            0%, 100% { opacity: 0; transform: translate(-50%, -40%); }
+            10%, 90% { opacity: 1; transform: translate(-50%, -50%); }
+        }
+        
+        /* Efectos de hover interactivos */
+        .trailer-container:hover .sun {
+            animation: sunGlow 2s infinite alternate;
+        }
+        
+        .trailer-container:hover .car {
+            animation-duration: 5s;
+        }
+        
+        .trailer-container:hover .moto {
+            animation-duration: 4s;
+        }
+        
+        /* Estilo del botón siguiente mejorado */
+        .btn-next {
+            position: fixed;
+            right: 30px;
+            bottom: 30px;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(to bottom, #4CAF50, #45a049);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: all 0.2s;
+            box-shadow: 0 6px 0 0 #3d8b40, 0 8px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-next::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #3d8b40;
+            border-radius: 6px;
+            top: 0;
+            left: 0;
+            transform: translateZ(-4px);
+            z-index: -1;
+        }
+        
+        .btn-next:hover {
+            transform: translateY(2px) rotateX(5deg);
+            box-shadow: 0 4px 0 0 #3d8b40, 0 6px 10px rgba(0,0,0,0.2);
+        }
+        
+        .btn-next:active {
+            transform: translateY(6px) rotateX(5deg);
+            box-shadow: 0 0 0 0 #3d8b40, 0 3px 5px rgba(0,0,0,0.2);
+        }
+        
+        .btn-next::after {
+            content: '→';
+            margin-left: 8px;
+            display: inline-block;
+            transition: transform 0.2s;
+        }
+        
+        .btn-next:hover::after {
+            transform: translateX(3px);
+        }
+        
+        /* Transición entre escenas */
+        .scene-transition {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.5s ease;
+        }
+        
+        /* Efecto de partículas mejorado */
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .particle {
+            position: absolute;
+            background-color: rgba(255, 0, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatParticle linear infinite;
+            filter: blur(1px);
+        }
+        
+        @keyframes floatParticle {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(20px); opacity: 0; }
+        }
+        
+        /* Efecto de estrellas */
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 5s infinite ease-in-out;
+            opacity: 0.5;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+        
+        /* Colegio misterioso */
+        .mystery-school {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            transition: all 1.5s ease;
+            z-index: 20;
+            width: 500px;
+            height: 400px;
+            background: linear-gradient(to bottom, #3e3e3e, #1a1a1a);
+            border: 3px solid #b08d57;
+            box-shadow: 0 0 50px rgba(255, 0, 255, 0.5);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-content: flex-start;
+            padding: 20px;
+        }
+        
+        .mystery-school.active {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+        
+        .school-window {
+            width: 60px;
+            height: 40px;
+            background-color: #dcdcdc;
+            border: 2px solid #999;
+            margin: 10px;
+            border-radius: 5px;
+            transition: all 0.3s;
+            animation: windowPulse 2s infinite alternate;
+        }
+        
+        .school-window.lit {
+            background-color: #ff00ff;
+            box-shadow: 0 0 15px #ff00ff, 0 0 25px #ff00ff;
+            animation: neonFlicker 0.5s infinite alternate;
+        }
+        
+        @keyframes windowPulse {
+            0% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+        
+        @keyframes neonFlicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                opacity: 1;
+                box-shadow: 0 0 15px #ff00ff, 0 0 25px #ff00ff;
+            }
+            20%, 22%, 24%, 55% {
+                opacity: 0.5;
+                box-shadow: none;
+            }
+        }
+        
+        /* Efecto de campana */
+        .bell-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,200,255,0.8) 100%);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.5s ease;
+        }
+        
+        .bell-effect.active {
+            opacity: 1;
+        }
+        
+        .bell-text {
+            font-size: 8rem;
+            font-weight: bold;
+            color: #ff00ff;
+            text-shadow: 0 0 20px #ff00ff, 0 0 40px #ff00ff;
+            animation: bellShake 0.3s infinite alternate, bellPulse 0.5s infinite alternate;
+        }
+        
+        @keyframes bellShake {
+            0% { transform: rotate(-10deg) scale(1); }
+            100% { transform: rotate(10deg) scale(1.1); }
+        }
+        
+        @keyframes bellPulse {
+            0% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+        
+        /* Personaje misterioso */
+        .mystery-character {
+            position: absolute;
+            width: 80px;
+            height: 150px;
+            bottom: 20%;
+            left: -100px;
+            z-index: 15;
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+        
+        .character-body {
+            position: absolute;
+            width: 60px;
+            height: 100px;
+            bottom: 0;
+            left: 10px;
+            background: linear-gradient(to bottom, #333, #111);
+            border-radius: 30px 30px 0 0;
+        }
+        
+        .character-head {
+            position: absolute;
+            width: 40px;
+            height: 50px;
+            bottom: 100px;
+            left: 20px;
+            background: linear-gradient(to bottom, #f5d6ba, #e0b48d);
+            border-radius: 50%;
+            box-shadow: 0 -5px 0 rgba(0,0,0,0.1) inset;
+        }
+        
+        .character-shadow {
+            position: absolute;
+            width: 70px;
+            height: 20px;
+            bottom: -10px;
+            left: 5px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 50%;
+            filter: blur(5px);
+        }
+        
+        /* Efecto de niebla */
+        .fog {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .fog-particle {
+            position: absolute;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            filter: blur(5px);
+            animation: fogMove linear infinite;
+        }
+        
+        @keyframes fogMove {
+            0% { transform: translateX(0) translateY(0); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateX(100px) translateY(-50px); opacity: 0; }
+        }
+        
+        /* Efecto de lluvia */
+        .rain {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 4;
+            pointer-events: none;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+        
+        .rain-drop {
+            position: absolute;
+            width: 1px;
+            height: 20px;
+            background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.7));
+            animation: rainFall linear infinite;
+        }
+        
+        @keyframes rainFall {
+            0% { transform: translateY(-100vh) translateX(0); }
+            100% { transform: translateY(100vh) translateX(20px); }
+        }
+        
+        /* Efecto de relámpagos */
+        .lightning {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 30;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        /* Efecto de portal */
+        .portal {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,255,255,0.8), rgba(0,100,255,0.2));
+            box-shadow: 0 0 50px rgba(0,255,255,0.8);
+            z-index: 25;
+            opacity: 0;
+            transition: all 1s ease;
+            pointer-events: none;
+        }
+        
+        .portal.active {
+            opacity: 1;
+            animation: portalPulse 2s infinite alternate;
+        }
+        
+        @keyframes portalPulse {
+            0% { transform: scale(1); box-shadow: 0 0 50px rgba(0,255,255,0.8); }
+            100% { transform: scale(1.1); box-shadow: 0 0 100px rgba(0,255,255,1); }
+        }
+        
+        /* Notas musicales */
+        .music-note {
+            position: absolute;
+            color: rgba(255,255,255,0.7);
+            font-size: 24px;
+            z-index: 5;
+            animation: floatNote linear infinite;
+            opacity: 0;
+        }
+        
+        @keyframes floatNote {
+            0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) translateX(50px) rotate(360deg); opacity: 0; }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .trailer-title {
+                font-size: 2rem;
+            }
+            
+            .trailer-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .trailer-btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            
+            .mystery-school {
+                width: 300px;
+                height: 240px;
+            }
+            
+            .school-window {
+                width: 40px;
+                height: 30px;
+                margin: 5px;
+            }
+            
+            .bell-text {
+                font-size: 4rem;
+            }
+        }
+
+       
+        
+       
+       
+       .mini-back-button {
+        width: 200px;
+        height: 200px;
+        font-size: 14px;
+        background-color: #4CAF50; /* Color verde */
+        color: white;
+        border: none;
+        border-radius: 39px;
+        cursor: pointer;
+        transition: background-color 0.3s; /* Transición suave */
+    }
+    .mini-back-button:hover {
+        background-color: #45a049; /* Color más oscuro al pasar el cursor */
+    }
+    </style>
+</head>
+<button class="mini-back-button" onclick="window.location.href='index.html'">
+    <h1>
+Volver atrás
+    </h1>
+</button>
+<body>
+    <div class="trailer-container" id="trailer">
+        <!-- Sol -->
+        <div class="sun"></div>
+        
+        <!-- Nubes -->
+        <div class="cloud" style="top: 20%; left: 20%; width: 60px; height: 30px;"></div>
+        <div class="cloud" style="top: 15%; left: 40%; width: 100px; height: 40px;"></div>
+        <div class="cloud" style="top: 25%; left: 70%; width: 80px; height: 35px;"></div>
+        
+        <!-- Escena de ciudad -->
+        <div class="city-scene">
+            <!-- Edificios generados por JS -->
+        </div>
+        
+        <!-- Calle -->
+        <div class="street">
+            <!-- Líneas de calle generadas por JS -->
+        </div>
+        
+        <!-- Autos y motos generados por JS -->
+        
+        <!-- Efecto de viento -->
+        <div class="wind" id="wind"></div>
+        
+        <!-- Efecto de niebla -->
+        <div class="fog" id="fog"></div>
+        
+        <!-- Efecto de lluvia -->
+        <div class="rain" id="rain"></div>
+        
+        <!-- Efecto de relámpagos -->
+        <div class="lightning" id="lightning"></div>
+        
+        <!-- Estrellas y partículas -->
+        <div class="stars" id="stars"></div>
+        <div class="particles" id="particles"></div>
+        
+        <!-- Colegio misterioso -->
+        <div class="mystery-school" id="mysterySchool">
+            <!-- Ventanas generadas por JS -->
+        </div>
+        
+        <!-- Personaje misterioso -->
+        <div class="mystery-character" id="mysteryCharacter">
+            <div class="character-shadow"></div>
+            <div class="character-body"></div>
+            <div class="character-head"></div>
+        </div>
+        
+        <!-- Efecto de portal -->
+        <div class="portal" id="portal"></div>
+        
+        <!-- Efecto de campana -->
+        <div class="bell-effect" id="bellEffect">
+            <div class="bell-text">✝</div>
+        </div>
+        
+        <!-- Texto del trailer -->
+        <div class="trailer-text" style="animation-delay: 1s;">
+            <h1 class="trailer-title">El Misterio</h1>
+            <p class="trailer-subtitle">Una historia que cambiará todo</p>
+            <button class="trailer-btn" id="exploreBtn">Explorar</button>
+        </div>
+        
+        <div class="trailer-text" style="animation-delay: 6s;">
+            <h1 class="trailer-title">Blackwood</h1>
+            <p class="trailer-subtitle">El colegio donde los secretos no descansan</p>
+        </div>
+        
+        <div class="trailer-text" style="animation-delay: 11s;">
+            <h1 class="trailer-title">Próximamente</h1>
+            <p class="trailer-subtitle">¿Estás preparado para la verdad?</p>
+        </div>
+        
+        <!-- Transición entre escenas -->
+        <div class="scene-transition" id="sceneTransition"></div>
+    </div>
+    
+  
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const trailer = document.getElementById('trailer');
+            const cityScene = document.querySelector('.city-scene');
+            const street = document.querySelector('.street');
+            const windContainer = document.getElementById('wind');
+            const fogContainer = document.getElementById('fog');
+            const rainContainer = document.getElementById('rain');
+            const lightning = document.getElementById('lightning');
+            const exploreBtn = document.getElementById('exploreBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const starsContainer = document.getElementById('stars');
+            const particlesContainer = document.getElementById('particles');
+            const mysterySchool = document.getElementById('mysterySchool');
+            const mysteryCharacter = document.getElementById('mysteryCharacter');
+            const portal = document.getElementById('portal');
+            const bellEffect = document.getElementById('bellEffect');
+            const sceneTransition = document.getElementById('sceneTransition');
+            
+            // Estado de la experiencia
+            let currentScene = 0;
+            const totalScenes = 3;
+            let isRaining = false;
+            let isDaytime = true;
+            
+            // Generar edificios
+            for (let i = 0; i < 30; i++) {
+                const building = document.createElement('div');
+                building.className = 'building';
+                
+                const left = Math.random() * 100;
+                const width = 40 + Math.random() * 100;
+                const height = 100 + Math.random() * 300;
+                
+                building.style.left = `${left}%`;
+                building.style.width = `${width}px`;
+                building.style.height = `${height}px`;
+                
+                // Ventanas
+                const windowCount = Math.floor(height / 40);
+                for (let w = 0; w < windowCount; w++) {
+                    const window = document.createElement('div');
+                    window.style.position = 'absolute';
+                    window.style.left = '10px';
+                    window.style.top = `${20 + w * 40}px`;
+                    window.style.width = `${width - 20}px`;
+                    window.style.height = '20px';
+                    window.style.background = 'linear-gradient(to bottom, #ffcc00, #ff9900)';
+                    
+                    if (Math.random() > 0.7) {
+                        window.style.background = 'linear-gradient(to bottom, #333, #555)';
+                    }
+                    
+                    building.appendChild(window);
+                }
+                
+                cityScene.appendChild(building);
+            }
+            
+            // Generar líneas de la calle
+            for (let i = 0; i < 20; i++) {
+                const line = document.createElement('div');
+                line.className = 'street-line';
+                line.style.left = `${i * 150}px`;
+                line.style.animationDelay = `${i * 0.2}s`;
+                street.appendChild(line);
+            }
+            
+            // Generar autos
+            for (let i = 0; i < 5; i++) {
+                const car = document.createElement('div');
+                car.className = 'car';
+                car.style.bottom = `${22 + Math.random() * 3}%`;
+                car.style.animationDelay = `${Math.random() * 5}s`;
+                car.style.animationDuration = `${8 + Math.random() * 7}s`;
+                
+                const colors = ['red', 'blue', 'green', 'yellow', 'purple'];
+                car.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                trailer.appendChild(car);
+            }
+            
+            // Generar motos
+            for (let i = 0; i < 5; i++) {
+                const moto = document.createElement('div');
+                moto.className = 'moto';
+                moto.style.bottom = `${20 + Math.random() * 3}%`;
+                moto.style.animationDelay = `${Math.random() * 5}s`;
+                moto.style.animationDuration = `${6 + Math.random() * 5}s`;
+                
+                const colors = ['blue', 'black', 'orange', 'white', 'gray'];
+                moto.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                trailer.appendChild(moto);
+            }
+            
+            // Generar efecto de viento
+            function createWindParticles() {
+                for (let i = 0; i < 50; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'wind-particle';
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.top = `${Math.random() * 100}%`;
+                    particle.style.animationDelay = `${Math.random() * 10}s`;
+                    particle.style.animationDuration = `${5 + Math.random() * 10}s`;
+                    windContainer.appendChild(particle);
+                }
+            }
+            
+            createWindParticles();
+            
+            // Generar efecto de niebla
+            function createFogParticles() {
+                for (let i = 0; i < 30; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'fog-particle';
+                    
+                    const size = 100 + Math.random() * 200;
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.top = `${Math.random() * 100}%`;
+                    
+                    particle.style.animationDuration = `${20 + Math.random() * 30}s`;
+                    particle.style.animationDelay = `${Math.random() * 20}s`;
+                    
+                    fogContainer.appendChild(particle);
+                }
+            }
+            
+            createFogParticles();
+            
+            // Generar efecto de lluvia
+            function createRain() {
+                for (let i = 0; i < 100; i++) {
+                    const drop = document.createElement('div');
+                    drop.className = 'rain-drop';
+                    
+                    drop.style.left = `${Math.random() * 100}%`;
+                    drop.style.animationDuration = `${0.5 + Math.random() * 1}s`;
+                    drop.style.animationDelay = `${Math.random() * 2}s`;
+                    
+                    rainContainer.appendChild(drop);
+                }
+            }
+            
+            createRain();
+            
+            // Toggle lluvia
+            function toggleRain() {
+                isRaining = !isRaining;
+                if (isRaining) {
+                    rainContainer.style.opacity = '1';
+                    // Añadir relámpagos ocasionales
+                    setInterval(() => {
+                        if (Math.random() > 0.9) {
+                            lightning.style.opacity = '0.8';
+                            setTimeout(() => {
+                                lightning.style.opacity = '0';
+                            }, 100);
+                        }
+                    }, 3000);
+                } else {
+                    rainContainer.style.opacity = '0';
+                }
+            }
+            
+            // Toggle día/noche
+            function toggleDayNight() {
+                isDaytime = !isDaytime;
+                if (isDaytime) {
+                    document.body.style.background = 'linear-gradient(to bottom, #1a2a6c, #b21f1f, #fdbb2d)';
+                    document.querySelector('.sun').style.opacity = '1';
+                } else {
+                    document.body.style.background = 'linear-gradient(to bottom, #000428, #004e92)';
+                    document.querySelector('.sun').style.opacity = '0';
+                }
+            }
+            
+            // Generar estrellas
+            function createStars() {
+                for (let i = 0; i < 200; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    
+                    const size = Math.random() * 2 + 1;
+                    star.style.width = `${size}px`;
+                    star.style.height = `${size}px`;
+                    
+                    star.style.left = `${Math.random() * 100}%`;
+                    star.style.top = `${Math.random() * 100}%`;
+                    
+                    star.style.opacity = Math.random() * 0.5 + 0.1;
+                    star.style.animationDuration = `${Math.random() * 5 + 3}s`;
+                    
+                    starsContainer.appendChild(star);
+                }
+            }
+            
+            createStars();
+            
+            // Generar partículas
+            function createParticles() {
+                for (let i = 0; i < 100; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    
+                    const size = Math.random() * 3 + 1;
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.bottom = `-10px`;
+                    
+                    particle.style.opacity = Math.random() * 0.5 + 0.1;
+                    const duration = Math.random() * 15 + 10;
+                    particle.style.animationDuration = `${duration}s`;
+                    particle.style.animationDelay = `${Math.random() * 5}s`;
+                    
+                    particlesContainer.appendChild(particle);
+                }
+            }
+            
+            createParticles();
+            
+            // Generar ventanas del colegio
+            function createSchoolWindows() {
+                for (let i = 0; i < 20; i++) {
+                    const window = document.createElement('div');
+                    window.className = 'school-window';
+                    
+                    // Posición aleatoria dentro del colegio
+                    window.style.position = 'absolute';
+                    window.style.left = `${10 + Math.random() * 80}%`;
+                    window.style.top = `${10 + Math.random() * 70}%`;
+                    
+                    // Aleatoriamente encender algunas ventanas
+                    if (Math.random() > 0.5) {
+                        window.classList.add('lit');
+                    }
+                    
+                    mysterySchool.appendChild(window);
+                }
+            }
+            
+            createSchoolWindows();
+            
+            // Mostrar personaje misterioso
+            function showCharacter() {
+                mysteryCharacter.style.opacity = '1';
+                mysteryCharacter.style.left = '20%';
+                
+                // Mover personaje a través de la pantalla
+                setTimeout(() => {
+                    mysteryCharacter.style.left = '80%';
+                    
+                    // Crear portal cuando llega al otro lado
+                    setTimeout(() => {
+                        portal.style.left = `${mysteryCharacter.offsetLeft}px`;
+                        portal.style.top = `${mysteryCharacter.offsetTop}px`;
+                        portal.classList.add('active');
+                        
+                        // Desvanecer personaje en el portal
+                        setTimeout(() => {
+                            mysteryCharacter.style.opacity = '0';
+                            
+                            // Desvanecer portal
+                            setTimeout(() => {
+                                portal.classList.remove('active');
+                            }, 1000);
+                        }, 1000);
+                    }, 2000);
+                }, 3000);
+            }
+            
+            // Crear notas musicales
+            function createMusicNotes() {
+                for (let i = 0; i < 10; i++) {
+                    const note = document.createElement('div');
+                    note.className = 'music-note';
+                    note.innerHTML = '♪';
+                    
+                    note.style.left = `${10 + Math.random() * 80}%`;
+                    note.style.bottom = '20%';
+                    note.style.animationDuration = `${3 + Math.random() * 4}s`;
+                    note.style.animationDelay = `${Math.random() * 5}s`;
+                    
+                    document.body.appendChild(note);
+                }
+            }
+            
+            // Interacción con el botón
+            exploreBtn.addEventListener('click', function() {
+                // Efecto especial al hacer clic
+                const sun = document.querySelector('.sun');
+                sun.style.transform = 'scale(1.5)';
+                sun.style.transition = 'transform 0.5s';
+                
+                setTimeout(() => {
+                    sun.style.transform = 'scale(1)';
+                }, 500);
+                
+                // Mostrar colegio misterioso
+                mysterySchool.classList.add('active');
+                
+                // Mostrar personaje
+                showCharacter();
+                
+                // Crear notas musicales
+                createMusicNotes();
+                
+                // Efecto de campana
+                setTimeout(() => {
+                    bellEffect.classList.add('active');
+                    setTimeout(() => {
+                        bellEffect.classList.remove('active');
+                    }, 3000);
+                }, 2000);
+                
+                // Cambiar clima
+                setTimeout(toggleRain, 4000);
+                setTimeout(toggleDayNight, 6000);
+            });
+            
+            // Efecto de parallax con el movimiento del ratón
+            trailer.addEventListener('mousemove', (e) => {
+                const x = e.clientX / window.innerWidth;
+                const y = e.clientY / window.innerHeight;
+                
+                const sun = document.querySelector('.sun');
+                sun.style.transform = `translate(${x * 20 - 10}px, ${y * 20 - 10}px)`;
+                
+                const clouds = document.querySelectorAll('.cloud');
+                clouds.forEach((cloud, i) => {
+                    cloud.style.transform = `translate(${(x * 40 - 20) / (i + 1)}px, ${(y * 40 - 20) / (i + 1)}px)`;
+                });
+                
+                // Mover partículas con el ratón
+                const particles = document.querySelectorAll('.particle');
+                particles.forEach(particle => {
+                    const speed = parseFloat(particle.style.animationDuration) || 10;
+                    particle.style.transform = `translate(${x * 10 - 5}px, ${y * 10 - 5}px)`;
+                });
+            });
+            
+            // Transición entre escenas
+            function nextScene() {
+                currentScene = (currentScene + 1) % totalScenes;
+                
+                // Efecto de transición
+                sceneTransition.style.opacity = '1';
+                
+                setTimeout(() => {
+                    sceneTransition.style.opacity = '0';
+                    
+                    // Cambiar elementos según la escena
+                    if (currentScene === 1) {
+                        // Mostrar colegio
+                        mysterySchool.classList.add('active');
+                        // Mostrar personaje
+                        showCharacter();
+                        // Cambiar a noche
+                        toggleDayNight();
+                    } else if (currentScene === 2) {
+                        // Efecto de campana
+                        bellEffect.classList.add('active');
+                        // Activar lluvia
+                        toggleRain();
+                        // Crear notas musicales
+                        createMusicNotes();
+                        setTimeout(() => {
+                            bellEffect.classList.remove('active');
+                        }, 3000);
+                    } else {
+                        // Volver a día
+                        if (!isDaytime) toggleDayNight();
+                        // Desactivar lluvia
+                        if (isRaining) toggleRain();
+                        // Ocultar colegio
+                        mysterySchool.classList.remove('active');
+                    }
+                }, 1500);
+            }
+            
+            // Botón siguiente
+            nextBtn.addEventListener('click', nextScene);
+            
+            // Transición automática cada 15 segundos
+            setInterval(nextScene, 15000);
+            
+            // Parpadeo aleatorio de ventanas del colegio
+            setInterval(() => {
+                const windows = document.querySelectorAll('.school-window');
+                windows.forEach(window => {
+                    if (Math.random() > 0.7) {
+                        window.classList.toggle('lit');
+                    }
+                });
+            }, 1000);
+            
+            // Efecto de teclado - presionar 'r' para lluvia
+            document.addEventListener('keydown', (e) => {
+                if (e.key.toLowerCase() === 'r') {
+                    toggleRain();
+                }
+                if (e.key.toLowerCase() === 'd') {
+                    toggleDayNight();
+                }
+                if (e.key.toLowerCase() === 'm') {
+                    createMusicNotes();
+                }
+                if (e.key.toLowerCase() === 'p') {
+                    showCharacter();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

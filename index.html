@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Casa Inteligente - Panel Profesional</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark-color);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Barra de navegación mejorada */
+        .nav-container {
+            width: 100%;
+            background-color: var(--primary-color);
+            box-shadow: var(--shadow);
+            padding: 1rem 0;
+            position: relative;
+            z-index: 100;
+        }
+
+        .nav-menu {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .nav-button {
+            padding: 0.7rem 1.5rem;
+            background-color: transparent;
+            color: var(--light-color);
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-button:hover {
+            color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .nav-button.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .nav-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 3px;
+            background-color: var(--secondary-color);
+            border-radius: 3px;
+        }
+
+        /* Contenedor principal */
+        .main-container {
+            flex: 1;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        /* Panel de control */
+        .control-panel {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            height: fit-content;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .panel-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .panel-subtitle {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-top: 0.3rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            background-color: #f1f1f1;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--success-color);
+        }
+
+        .status-dot.offline {
+            background-color: #95a5a6;
+        }
+
+        /* Controles de dispositivos */
+        .device-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .device-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 1.2rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .device-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .device-card.active {
+            border-color: var(--secondary-color);
+            background-color: #f8fafb;
+        }
+
+        .device-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .device-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+
+        .device-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #e3f2fd;
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+        }
+
+        .device-icon.light {
+            background-color: #fff8e1;
+            color: #f39c12;
+        }
+
+        .device-icon.fireplace {
+            background-color: #ffebee;
+            color: var(--accent-color);
+        }
+
+        .device-icon.security {
+            background-color: #e8f5e9;
+            color: #4caf50;
+        }
+
+        .device-icon.climate {
+            background-color: #e3f2fd;
+            color: #2196f3;
+        }
+
+        .device-icon.blinds {
+            background-color: #efebe9;
+            color: #6d4c41;
+        }
+
+        .device-icon.sprinkler {
+            background-color: #e8eaf6;
+            color: #3f51b5;
+        }
+
+        .device-icon.camera {
+            background-color: #f3e5f5;
+            color: #9c27b0;
+        }
+
+        .device-status {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-bottom: 0.5rem;
+        }
+
+        .device-status.on {
+            color: var(--success-color);
+        }
+
+        .device-status.off {
+            color: #95a5a6;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: var(--transition);
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: var(--transition);
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--success-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Escena de la casa */
+        .scene-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .scene {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F7FA 100%);
+        }
+
+        /* Suelo */
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(to bottom, #8BC34A 0%, #689F38 100%);
+            border-top: 2px solid #558B2F;
+        }
+
+        /* Casa */
+        .house {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 400px;
+            height: 250px;
+        }
+
+        /* Estructura de la casa */
+        .house-body {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 160px;
+            background-color: #FFCCBC;
+            border: 5px solid #E64A19;
+            border-bottom: none;
+        }
+
+        /* Techo */
+        .roof {
+            position: absolute;
+            top: 0;
+            left: -5%;
+            width: 110%;
+            height: 100px;
+            background-color: #5D4037;
+            clip-path: polygon(0% 100%, 50% 0%, 100% 100%);
+        }
+
+        /* Chimenea */
+        .chimney {
+            position: absolute;
+            top: 30px;
+            right: 15%;
+            width: 25px;
+            height: 50px;
+            background-color: #3E2723;
+        }
+
+        /* Humo */
+        .smoke {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 15px;
+            height: 15px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            filter: blur(4px);
+            animation: smokeAnimation 8s infinite ease-out;
+        }
+
+        @keyframes smokeAnimation {
+            0% {
+                transform: translateX(-50%) translateY(0) scale(1);
+                opacity: 0.7;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateX(-50%) translateY(-80px) scale(2);
+                opacity: 0;
+            }
+        }
+
+        /* Puerta */
+        .door {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 100px;
+            background-color: #5D4037;
+            border: 3px solid #3E2723;
+        }
+
+        .door-knob {
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            background-color: #FFC107;
+            border-radius: 50%;
+        }
+
+        /* Ventanas */
+        .window {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: #B3E5FC;
+            border: 3px solid #0288D1;
+        }
+
+        .window.left {
+            top: 50px;
+            left: 10%;
+        }
+
+        .window.right {
+            top: 50px;
+            right: 10%;
+        }
+
+        .window-pane {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            border-right: 2px solid #0288D1;
+            border-bottom: 2px solid #0288D1;
+        }
+
+        .window-pane:nth-child(1) {
+            top: 0;
+            left: 0;
+        }
+
+        .window-pane:nth-child(2) {
+            top: 0;
+            right: 0;
+            border-right: none;
+            border-left: 2px solid #0288D1;
+        }
+
+        .window-pane:nth-child(3) {
+            bottom: 0;
+            left: 0;
+            border-bottom: none;
+            border-top: 2px solid #0288D1;
+        }
+
+        .window-pane:nth-child(4) {
+            bottom: 0;
+            right: 0;
+            border-right: none;
+            border-bottom: none;
+            border-top: 2px solid #0288D1;
+            border-left: 2px solid #0288D1;
+        }
+
+        /* Luz de las ventanas */
+        .window-light {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 0, 0);
+            transition: background-color 0.5s;
+            box-shadow: 0 0 15px rgba(255, 255, 0, 0);
+        }
+
+        /* Persianas */
+        .blinds {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                to bottom,
+                #5D4037,
+                #5D4037 5px,
+                #3E2723 5px,
+                #3E2723 10px
+            );
+            transform: translateY(-100%);
+            transition: transform 0.5s ease;
+            z-index: 2;
+        }
+
+        .blinds.open {
+            transform: translateY(0);
+        }
+
+        /* Cámara de seguridad */
+        .security-camera {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 15px;
+            background-color: #333;
+            border-radius: 10px 10px 0 0;
+            z-index: 5;
+        }
+
+        .camera-light {
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 5px;
+            height: 5px;
+            background-color: #f00;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* Sistema de riego */
+        .sprinkler {
+            position: absolute;
+            bottom: 100px;
+            left: 10%;
+            width: 15px;
+            height: 15px;
+            background-color: #3f51b5;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .water-spray {
+            position: absolute;
+            bottom: 115px;
+            left: 10%;
+            width: 2px;
+            height: 0;
+            background-color: rgba(66, 165, 245, 0.7);
+            transform-origin: bottom center;
+            opacity: 0;
+        }
+
+        /* Nubes */
+        .cloud {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            filter: blur(5px);
+            animation: cloudMove linear infinite;
+        }
+
+        @keyframes cloudMove {
+            from {
+                transform: translateX(-150px);
+            }
+            to {
+                transform: translateX(calc(100vw + 150px));
+            }
+        }
+
+        /* Sol */
+        .sun {
+            position: absolute;
+            top: 50px;
+            right: 10%;
+            width: 50px;
+            height: 50px;
+            background-color: #FFEB3B;
+            border-radius: 50%;
+            box-shadow: 0 0 30px #FFC107;
+            animation: sunPulse 4s infinite alternate;
+        }
+
+        @keyframes sunPulse {
+            from {
+                box-shadow: 0 0 30px #FFC107;
+            }
+            to {
+                box-shadow: 0 0 50px #FF9800;
+            }
+        }
+
+        /* Panel de información */
+        .info-panel {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .info-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .info-content {
+            font-size: 0.95rem;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        /* Plano de la casa - MEJORADO */
+        .floor-plan-container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .floor-plan-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .floor-plan-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .floor-plan-btn {
+            padding: 0.3rem 0.8rem;
+            background-color: var(--light-color);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: var(--transition);
+        }
+
+        .floor-plan-btn:hover {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .floor-plan {
+            width: 100%;
+            height: 300px;
+            background-color: #f0f4f8;
+            border-radius: 8px;
+            margin-top: 1rem;
+            position: relative;
+            border: 1px solid #d1d8e0;
+            overflow: hidden;
+            background-image: linear-gradient(#d1d8e0 1px, transparent 1px),
+                              linear-gradient(90deg, #d1d8e0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .room {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 2px solid #a4b0be;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .room:hover {
+            background-color: rgba(200, 230, 255, 0.7);
+            border-color: var(--secondary-color);
+            z-index: 10;
+            transform: scale(1.03);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .room.active {
+            background-color: rgba(200, 230, 255, 0.9);
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 2px var(--secondary-color);
+        }
+
+        .room-label {
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+            color: var(--primary-color);
+        }
+
+        .room-status {
+            font-size: 0.7rem;
+            color: #666;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .room-icon {
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+            color: var(--secondary-color);
+        }
+
+        .wall {
+            position: absolute;
+            background-color: #57606f;
+        }
+
+        .door-plan {
+            position: absolute;
+            background-color: #a55c2f;
+            z-index: 2;
+        }
+
+        .window-plan {
+            position: absolute;
+            background-color: #b3e5fc;
+            border: 1px solid #0288d1;
+            z-index: 2;
+        }
+
+        /* Media queries para responsividad */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                padding: 1.5rem;
+            }
+            
+            .scene-container {
+                height: 400px;
+                order: -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                flex-wrap: wrap;
+            }
+            
+            .device-controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .house {
+                height: 200px;
+            }
+            
+            .house-body {
+                height: 130px;
+            }
+            
+            .roof {
+                height: 80px;
+            }
+            
+            .window.left, .window.right {
+                top: 40px;
+            }
+            
+            .door {
+                height: 80px;
+                width: 60px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-button {
+                padding: 0.5rem 1rem;
+                font-size: 0.85rem;
+            }
+            
+            .main-container {
+                padding: 1rem;
+            }
+            
+            .panel-title {
+                font-size: 1.3rem;
+            }
+            
+            .scene-container {
+                height: 300px;
+            }
+        }
+
+
+
+
+         /* Contenedor loader - pantalla inicial */
+  #loader {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:sandybrown;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 9999;
+  }
+
+  #loader .loader-logo {
+    font-size: 4rem;
+    font-weight: 900;
+    text-shadow:
+      0 0 10px #ff00de,
+      0 0 20px #ff00de,
+      0 0 30px #ff00de;
+  }
+
+  /* Contenedor principal oculto al inicio */
+  #main-content {
+    display: none;
+    padding: 20px;
+    text-align: center;
+  }
+
+  /* Imagen */
+  #main-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(255, 0, 222, 0.7);
+    margin-bottom: 20px;
+  }
+
+  /* Círculo animado */
+  .loader-circle {
+    margin: 0 auto;
+    width: 80px;
+    height: 80px;
+    border: 6px solid #ff00de;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1.5s linear infinite;
+  }
+
+  /* Animación de giro */
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Efectos de luces */
+  .light-effect {
+    position: fixed;
+    top: 0; left: 0; right: 0; height: 15px;
+    background: linear-gradient(90deg, #ff00de, #00ffe7, #ff00de);
+    animation: lightMove 3s linear infinite;
+    z-index: 1000;
+  }
+
+  .stage-lights {
+    position: fixed;
+    bottom: 0; left: 0; right: 0; height: 15px;
+    background: linear-gradient(90deg, #00ffe7, #ff00de, #00ffe7);
+    animation: lightMove 3s linear infinite reverse;
+    z-index: 1000;
+  }
+
+  @keyframes lightMove {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
+
+
+  /* Agrega esto al CSS existente */
+
+.fade-out {
+  animation: fadeOut 1s forwards;
+}
+
+.fade-in {
+  animation: fadeIn 1s forwards;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    visibility: hidden;
+  }
+  to {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+    </style>
+</head>
+<body>
+<!-- Loader pantalla inicial con solo logo -->
+<div id="loader">
+  <div class="loader-logo">
+    <h3>
+       El sitio web de la arquitecta
+    </h3>
+    Cecilia Lilian Tour</div>
+</div>
+
+<!-- Contenido principal oculto al inicio -->
+<div id="main-content">
+  <!-- Efectos de iluminación -->
+  <div class="light-effect"></div>
+  <div class="stage-lights" id="stage-lights"></div>
+
+  
+  
+</div>
+
+
+    <!-- Barra de navegación mejorada -->
+    <div class="nav-container">
+        <div class="nav-menu">
+         <button class="nav-button active" id="inicioBtn" onclick="window.location.href='index.html'">
+    <i class="fas fa-home"></i> Inicio
+</button>
+<button class="nav-button" id="proyectoBtn" onclick="window.location.href='proyecto.html'">
+    <i class="fas fa-project-diagram"></i> Proyecto
+</button>
+<button class="nav-button" id="contactosBtn" onclick="window.location.href='contacto.html'">
+    <i class="fas fa-address-book"></i> Contactos
+</button>
+           
+        </div>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="main-container">
+        <!-- Panel de control -->
+        <div class="control-panel">
+            <div class="panel-header">
+                <div>
+                    <h1 class="panel-title">Control de Casa Inteligente</h1>
+                    <p class="panel-subtitle">Panel de control profesional - Versión 3.0</p>
+                </div>
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span>Conectado</span>
+                </div>
+            </div>
+            
+            <div class="device-controls">
+                <!-- Control de luces -->
+                <div class="device-card" id="lightControl">
+                    <div class="device-header">
+                        <div>
+                            <div class="device-name">Luces Principales</div>
+                            <div class="device-status off">Apagado</div>
+                        </div>
+                        <div class="device-icon light">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleLights">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <!-- Control de chimenea -->
+                <div class="device-card" id="fireplaceControl">
+                    <div class="device-header">
+                        <div>
+                            <div class="device-name">Chimenea</div>
+                            <div class="device-status off">Apagado</div>
+                        </div>
+                        <div class="device-icon fireplace">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleSmoke">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <!-- Sistema de Seguridad -->
+                <div class="device-card" id="securityControl">
+                    <div class="device-header">
+                        <div>
+                            <div class="device-name">Sistema de Seguridad</div>
+                            <div class="device-status off">Inactivo</div>
+                        </div>
+                        <div class="device-icon security">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleSecurity">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <!-- Control Climático -->
+                <div class="device-card" id="climateControl">
+                    <div class="device-header">
+                        <div>
+                            <div class="device-name">Control Climático</div>
+                            <div class="device-status off">22°C</div>
+                        </div>
+                        <div class="device-icon climate">
+                            <i class="fas fa-thermometer-half"></i>
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleClimate">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <!-- Persianas -->
+                <div class="device-card" id="blindsControl">
+                    <div class="device-header">
+                        <div>
+                            <div class="device-name">Persianas</div>
+                            <div class="device-status off">Cerradas</div>
+                        </div>
+                        <div class="device-icon blinds">
+                            <i class="fas fa-window-maximize"></i>
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleBlinds">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <!-- Sistema de Riego -->
+                <div class="device-card" id="sprinklerControl">
+                    <div class="device-header">
+                        <div>
+                            <div class="device-name">Sistema de Riego</div>
+                            <div class="device-status off">Inactivo</div>
+                        </div>
+                        <div class="device-icon sprinkler">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleSprinkler">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <!-- Cámaras de Seguridad -->
+                <div class="device-card" id="cameraControl">
+                    <div class="device-header">
+                        <div>
+                            <div class="device-name">Cámaras</div>
+                            <div class="device-status off">Inactivas</div>
+                        </div>
+                        <div class="device-icon camera">
+                            <i class="fas fa-video"></i>
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleCamera">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Panel de información -->
+            <div class="info-panel">
+                <h2 class="info-title">Estado del Sistema</h2>
+                <div class="info-content">
+                    <p><strong>Última actualización:</strong> <span id="lastUpdate">Hace unos momentos</span></p>
+                    <p><strong>Consumo energético:</strong> <span id="energyUsage">Bajo</span></p>
+                    <p><strong>Dispositivos conectados:</strong> <span id="connectedDevices">7/7</span></p>
+                    <p><strong>Temperatura exterior:</strong> <span id="outdoorTemp">24°C</span></p>
+                    <p><strong>Humedad:</strong> <span id="humidity">45%</span></p>
+                </div>
+            </div>
+            
+            <!-- Plano de la casa MEJORADO -->
+            <div class="floor-plan-container">
+                <div class="floor-plan-title">
+                    <span>Plano de la Casa</span>
+                    <div class="floor-plan-actions">
+                        <button class="floor-plan-btn" id="zoomInBtn"><i class="fas fa-search-plus"></i></button>
+                        <button class="floor-plan-btn" id="zoomOutBtn"><i class="fas fa-search-minus"></i></button>
+                        <button class="floor-plan-btn" id="fullscreenBtn"><i class="fas fa-expand"></i></button>
+                    </div>
+                </div>
+                <div class="floor-plan" id="floorPlan">
+                    <!-- Paredes -->
+                    <div class="wall" style="width: 60%; height: 10px; top: 20%; left: 20%;"></div> <!-- Pared superior -->
+                    <div class="wall" style="width: 10px; height: 60%; top: 20%; left: 20%;"></div> <!-- Pared izquierda -->
+                    <div class="wall" style="width: 10px; height: 60%; top: 20%; right: 20%;"></div> <!-- Pared derecha -->
+                    <div class="wall" style="width: 60%; height: 10px; bottom: 20%; left: 20%;"></div> <!-- Pared inferior -->
+                    
+                    <!-- Pared divisoria central -->
+                    <div class="wall" style="width: 10px; height: 40%; top: 30%; left: 50%; transform: translateX(-50%);"></div>
+                    
+                    <!-- Puertas -->
+                    <div class="door-plan" style="width: 20px; height: 10px; bottom: 20%; left: 50%; transform: translateX(-50%);"></div> <!-- Puerta principal -->
+                    <div class="door-plan" style="width: 10px; height: 20px; top: 50%; right: 20%; transform: translateY(-50%);"></div> <!-- Puerta derecha -->
+                    
+                    <!-- Ventanas -->
+                    <div class="window-plan" style="width: 30px; height: 10px; top: 25%; left: 25%;"></div>
+                    <div class="window-plan" style="width: 30px; height: 10px; top: 25%; right: 25%;"></div>
+                    
+                    <!-- Habitaciones -->
+                    <div class="room" style="width: 30%; height: 30%; top: 20%; left: 20%;" data-room="living">
+                        <div class="room-icon"><i class="fas fa-couch"></i></div>
+                        <span class="room-label">Sala</span>
+                        <span class="room-status">Luces: Apagadas</span>
+                    </div>
+                    <div class="room" style="width: 30%; height: 40%; top: 20%; right: 20%;" data-room="kitchen">
+                        <div class="room-icon"><i class="fas fa-utensils"></i></div>
+                        <span class="room-label">Cocina</span>
+                        <span class="room-status">Temperatura: 22°C</span>
+                    </div>
+                    <div class="room" style="width: 30%; height: 30%; bottom: 20%; left: 20%;" data-room="bedroom">
+                        <div class="room-icon"><i class="fas fa-bed"></i></div>
+                        <span class="room-label">Dormitorio</span>
+                        <span class="room-status">Seguridad: Activa</span>
+                    </div>
+                    <div class="room" style="width: 30%; height: 30%; bottom: 20%; right: 20%;" data-room="bathroom">
+                        <div class="room-icon"><i class="fas fa-bath"></i></div>
+                        <span class="room-label">Baño</span>
+                        <span class="room-status">Luces: Apagadas</span>
+                    </div>
+                    <div class="room" style="width: 20%; height: 20%; top: 50%; left: 50%; transform: translate(-50%, -50%);" data-room="hall">
+                        <div class="room-icon"><i class="fas fa-archway"></i></div>
+                        <span class="room-label">Pasillo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Escena de la casa -->
+        <div class="scene-container">
+            <div class="scene">
+                <!-- Sol -->
+                <div class="sun"></div>
+
+                <!-- Nubes (se generan con JS) -->
+
+                <!-- Casa -->
+                <div class="house">
+                    <!-- Cámara de seguridad -->
+                    <div class="security-camera">
+                        <div class="camera-light"></div>
+                    </div>
+                    
+                    <!-- Techo -->
+                    <div class="roof"></div>
+                    
+                    <!-- Chimenea y humo -->
+                    <div class="chimney">
+                        <div class="smoke"></div>
+                        <div class="smoke"></div>
+                        <div class="smoke"></div>
+                    </div>
+                    
+                    <!-- Cuerpo de la casa -->
+                    <div class="house-body">
+                        <!-- Ventana izquierda -->
+                        <div class="window left">
+                            <div class="window-pane"></div>
+                            <div class="window-pane"></div>
+                            <div class="window-pane"></div>
+                            <div class="window-pane"></div>
+                            <div class="window-light"></div>
+                            <div class="blinds"></div>
+                        </div>
+                        
+                        <!-- Ventana derecha -->
+                        <div class="window right">
+                            <div class="window-pane"></div>
+                            <div class="window-pane"></div>
+                            <div class="window-pane"></div>
+                            <div class="window-pane"></div>
+                            <div class="window-light"></div>
+                            <div class="blinds"></div>
+                        </div>
+                        
+                        <!-- Puerta -->
+                        <div class="door">
+                            <div class="door-knob"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sistema de riego -->
+                <div class="sprinkler"></div>
+                <div class="water-spray" style="transform: rotate(30deg);"></div>
+                <div class="water-spray" style="transform: rotate(60deg);"></div>
+                <div class="water-spray" style="transform: rotate(90deg);"></div>
+                <div class="water-spray" style="transform: rotate(120deg);"></div>
+                <div class="water-spray" style="transform: rotate(150deg);"></div>
+                <div class="water-spray" style="transform: rotate(180deg);"></div>
+                
+                <!-- Suelo -->
+                <div class="ground"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Font Awesome para íconos -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Crear nubes
+            const scene = document.querySelector('.scene');
+            for (let i = 0; i < 5; i++) {
+                const cloud = document.createElement('div');
+                cloud.className = 'cloud';
+                
+                // Tamaño y posición aleatoria
+                const size = Math.random() * 40 + 30;
+                const top = Math.random() * 100 + 20;
+                const opacity = Math.random() * 0.5 + 0.4;
+                const duration = Math.random() * 40 + 60;
+                const delay = Math.random() * -60;
+                
+                cloud.style.width = `${size}px`;
+                cloud.style.height = `${size * 0.6}px`;
+                cloud.style.top = `${top}px`;
+                cloud.style.opacity = opacity;
+                cloud.style.animationDuration = `${duration}s`;
+                cloud.style.animationDelay = `${delay}s`;
+                
+                scene.appendChild(cloud);
+            }
+
+            // Elementos DOM
+            const toggleLightsBtn = document.getElementById('toggleLights');
+            const toggleSmokeBtn = document.getElementById('toggleSmoke');
+            const toggleSecurityBtn = document.getElementById('toggleSecurity');
+            const toggleClimateBtn = document.getElementById('toggleClimate');
+            const toggleBlindsBtn = document.getElementById('toggleBlinds');
+            const toggleSprinklerBtn = document.getElementById('toggleSprinkler');
+            const toggleCameraBtn = document.getElementById('toggleCamera');
+            
+            const windowLights = document.querySelectorAll('.window-light');
+            const smokeElements = document.querySelectorAll('.smoke');
+            const blindsElements = document.querySelectorAll('.blinds');
+            const cameraLight = document.querySelector('.camera-light');
+            const waterSprays = document.querySelectorAll('.water-spray');
+            
+            const lightControl = document.getElementById('lightControl');
+            const fireplaceControl = document.getElementById('fireplaceControl');
+            const securityControl = document.getElementById('securityControl');
+            const climateControl = document.getElementById('climateControl');
+            const blindsControl = document.getElementById('blindsControl');
+            const sprinklerControl = document.getElementById('sprinklerControl');
+            const cameraControl = document.getElementById('cameraControl');
+            
+            const lightStatus = document.querySelector('#lightControl .device-status');
+            const fireplaceStatus = document.querySelector('#fireplaceControl .device-status');
+            const securityStatus = document.querySelector('#securityControl .device-status');
+            const climateStatus = document.querySelector('#climateControl .device-status');
+            const blindsStatus = document.querySelector('#blindsControl .device-status');
+            const sprinklerStatus = document.querySelector('#sprinklerControl .device-status');
+            const cameraStatus = document.querySelector('#cameraControl .device-status');
+            
+            const lastUpdateElement = document.getElementById('lastUpdate');
+            const energyUsageElement = document.getElementById('energyUsage');
+            const connectedDevicesElement = document.getElementById('connectedDevices');
+            const outdoorTempElement = document.getElementById('outdoorTemp');
+            const humidityElement = document.getElementById('humidity');
+
+            // Estados
+            let lightsOn = false;
+            let smokeOn = false;
+            let securityOn = false;
+            let climateOn = false;
+            let blindsOpen = false;
+            let sprinklerOn = false;
+            let cameraOn = false;
+            
+            // Variables para el plano
+            const floorPlan = document.getElementById('floorPlan');
+            const zoomInBtn = document.getElementById('zoomInBtn');
+            const zoomOutBtn = document.getElementById('zoomOutBtn');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            let scale = 1;
+            
+            // Función para actualizar la hora de última actualización
+            function updateLastUpdateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString();
+                lastUpdateElement.textContent = `Hoy a las ${timeString}`;
+            }
+            
+            // Función para actualizar el consumo energético
+            function updateEnergyUsage() {
+                let usage = 'Bajo';
+                let activeDevices = 0;
+                
+                if (lightsOn) activeDevices++;
+                if (smokeOn) activeDevices += 2; // Chimenea consume más
+                if (securityOn) activeDevices += 0.5;
+                if (climateOn) activeDevices += 1.5;
+                if (sprinklerOn) activeDevices += 0.8;
+                if (cameraOn) activeDevices += 0.3;
+                
+                if (activeDevices > 5) {
+                    usage = 'Alto';
+                } else if (activeDevices > 3) {
+                    usage = 'Moderado';
+                } else if (activeDevices > 1) {
+                    usage = 'Normal';
+                }
+                
+                energyUsageElement.textContent = usage;
+            }
+            
+            // Simular datos meteorológicos
+            function updateWeatherData() {
+                const temp = (Math.random() * 10 + 18).toFixed(1);
+                const humidity = (Math.random() * 30 + 40).toFixed(0);
+                outdoorTempElement.textContent = `${temp}°C`;
+                humidityElement.textContent = `${humidity}%`;
+                
+                // Cambiar el color según la temperatura
+                if (temp > 25) {
+                    outdoorTempElement.style.color = '#e74c3c';
+                } else if (temp < 20) {
+                    outdoorTempElement.style.color = '#3498db';
+                } else {
+                    outdoorTempElement.style.color = '#2ecc71';
+                }
+            }
+            
+            // Control de luces
+            toggleLightsBtn.addEventListener('change', function() {
+                lightsOn = this.checked;
+                
+                windowLights.forEach(light => {
+                    if (lightsOn) {
+                        light.style.backgroundColor = 'rgba(255, 255, 0, 0.3)';
+                        light.style.boxShadow = '0 0 15px rgba(255, 255, 0, 0.7)';
+                        lightControl.classList.add('active');
+                        lightStatus.textContent = 'Encendido';
+                        lightStatus.classList.remove('off');
+                        lightStatus.classList.add('on');
+                        
+                        // Actualizar estado en el plano
+                        document.querySelector('.room[data-room="living"] .room-status').textContent = 'Luces: Encendidas';
+                        document.querySelector('.room[data-room="living"]').classList.add('active');
+                    } else {
+                        light.style.backgroundColor = 'rgba(255, 255, 0, 0)';
+                        light.style.boxShadow = '0 0 15px rgba(255, 255, 0, 0)';
+                        lightControl.classList.remove('active');
+                        lightStatus.textContent = 'Apagado';
+                        lightStatus.classList.remove('on');
+                        lightStatus.classList.add('off');
+                        
+                        // Actualizar estado en el plano
+                        document.querySelector('.room[data-room="living"] .room-status').textContent = 'Luces: Apagadas';
+                        document.querySelector('.room[data-room="living"]').classList.remove('active');
+                    }
+                });
+                
+                updateLastUpdateTime();
+                updateEnergyUsage();
+            });
+            
+            // Control de humo/chimenea
+            toggleSmokeBtn.addEventListener('change', function() {
+                smokeOn = this.checked;
+                
+                smokeElements.forEach(smoke => {
+                    smoke.style.animationPlayState = smokeOn ? 'running' : 'paused';
+                    smoke.style.opacity = smokeOn ? '0.7' : '0';
+                });
+                
+                if (smokeOn) {
+                    fireplaceControl.classList.add('active');
+                    fireplaceStatus.textContent = 'Encendido';
+                    fireplaceStatus.classList.remove('off');
+                    fireplaceStatus.classList.add('on');
+                } else {
+                    fireplaceControl.classList.remove('active');
+                    fireplaceStatus.textContent = 'Apagado';
+                    fireplaceStatus.classList.remove('on');
+                    fireplaceStatus.classList.add('off');
+                }
+                
+                updateLastUpdateTime();
+                updateEnergyUsage();
+            });
+            
+            // Control de seguridad
+            toggleSecurityBtn.addEventListener('change', function() {
+                securityOn = this.checked;
+                
+                if (securityOn) {
+                    securityControl.classList.add('active');
+                    securityStatus.textContent = 'Activo';
+                    securityStatus.classList.remove('off');
+                    securityStatus.classList.add('on');
+                    // Efecto visual adicional
+                    document.querySelector('.house-body').style.boxShadow = '0 0 10px rgba(0, 150, 255, 0.5)';
+                    
+                    // Actualizar estado en el plano
+                    document.querySelector('.room[data-room="bedroom"] .room-status').textContent = 'Seguridad: Activa';
+                    document.querySelector('.room[data-room="bedroom"]').classList.add('active');
+                } else {
+                    securityControl.classList.remove('active');
+                    securityStatus.textContent = 'Inactivo';
+                    securityStatus.classList.remove('on');
+                    securityStatus.classList.add('off');
+                    document.querySelector('.house-body').style.boxShadow = 'none';
+                    
+                    // Actualizar estado en el plano
+                    document.querySelector('.room[data-room="bedroom"] .room-status').textContent = 'Seguridad: Inactiva';
+                    document.querySelector('.room[data-room="bedroom"]').classList.remove('active');
+                }
+                
+                updateLastUpdateTime();
+                updateEnergyUsage();
+            });
+            
+            // Control climático
+            toggleClimateBtn.addEventListener('change', function() {
+                climateOn = this.checked;
+                
+                if (climateOn) {
+                    climateControl.classList.add('active');
+                    climateStatus.textContent = '22°C';
+                    climateStatus.classList.remove('off');
+                    climateStatus.classList.add('on');
+                    
+                    // Actualizar estado en el plano
+                    document.querySelector('.room[data-room="kitchen"] .room-status').textContent = 'Temperatura: 22°C';
+                    document.querySelector('.room[data-room="kitchen"]').classList.add('active');
+                } else {
+                    climateControl.classList.remove('active');
+                    climateStatus.textContent = 'Apagado';
+                    climateStatus.classList.remove('on');
+                    climateStatus.classList.add('off');
+                    
+                    // Actualizar estado en el plano
+                    document.querySelector('.room[data-room="kitchen"] .room-status').textContent = 'Temperatura: --';
+                    document.querySelector('.room[data-room="kitchen"]').classList.remove('active');
+                }
+                
+                updateLastUpdateTime();
+                updateEnergyUsage();
+            });
+            
+            // Control de persianas
+            toggleBlindsBtn.addEventListener('change', function() {
+                blindsOpen = this.checked;
+                
+                blindsElements.forEach(blinds => {
+                    if (blindsOpen) {
+                        blinds.classList.add('open');
+                        blindsControl.classList.add('active');
+                        blindsStatus.textContent = 'Abiertas';
+                        blindsStatus.classList.remove('off');
+                        blindsStatus.classList.add('on');
+                    } else {
+                        blinds.classList.remove('open');
+                        blindsControl.classList.remove('active');
+                        blindsStatus.textContent = 'Cerradas';
+                        blindsStatus.classList.remove('on');
+                        blindsStatus.classList.add('off');
+                    }
+                });
+                
+                updateLastUpdateTime();
+                updateEnergyUsage();
+            });
+            
+            // Control de sistema de riego
+            toggleSprinklerBtn.addEventListener('change', function() {
+                sprinklerOn = this.checked;
+                
+                if (sprinklerOn) {
+                    sprinklerControl.classList.add('active');
+                    sprinklerStatus.textContent = 'Activo';
+                    sprinklerStatus.classList.remove('off');
+                    sprinklerStatus.classList.add('on');
+                    
+                    // Activar animación de agua
+                    waterSprays.forEach((spray, index) => {
+                        setTimeout(() => {
+                            spray.style.height = '40px';
+                            spray.style.opacity = '0.7';
+                            setTimeout(() => {
+                                spray.style.height = '0';
+                                spray.style.opacity = '0';
+                            }, 1000);
+                        }, index * 200);
+                    });
+                    
+                    // Repetir la animación cada 3 segundos
+                    const sprinklerInterval = setInterval(() => {
+                        if (!sprinklerOn) {
+                            clearInterval(sprinklerInterval);
+                            return;
+                        }
+                        
+                        waterSprays.forEach((spray, index) => {
+                            setTimeout(() => {
+                                spray.style.height = '40px';
+                                spray.style.opacity = '0.7';
+                                setTimeout(() => {
+                                    spray.style.height = '0';
+                                    spray.style.opacity = '0';
+                                }, 1000);
+                            }, index * 200);
+                        });
+                    }, 3000);
+                } else {
+                    sprinklerControl.classList.remove('active');
+                    sprinklerStatus.textContent = 'Inactivo';
+                    sprinklerStatus.classList.remove('on');
+                    sprinklerStatus.classList.add('off');
+                }
+                
+                updateLastUpdateTime();
+                updateEnergyUsage();
+            });
+            
+            // Control de cámaras
+            toggleCameraBtn.addEventListener('change', function() {
+                cameraOn = this.checked;
+                
+                if (cameraOn) {
+                    cameraControl.classList.add('active');
+                    cameraStatus.textContent = 'Activas';
+                    cameraStatus.classList.remove('off');
+                    cameraStatus.classList.add('on');
+                    cameraLight.style.opacity = '1';
+                    
+                    // Efecto de parpadeo
+                    setInterval(() => {
+                        if (!cameraOn) return;
+                        cameraLight.style.opacity = Math.random() > 0.7 ? '1' : '0.5';
+                    }, 500);
+                } else {
+                    cameraControl.classList.remove('active');
+                    cameraStatus.textContent = 'Inactivas';
+                    cameraStatus.classList.remove('on');
+                    cameraStatus.classList.add('off');
+                    cameraLight.style.opacity = '0';
+                }
+                
+                updateLastUpdateTime();
+                updateEnergyUsage();
+            });
+            
+            // Efecto de parpadeo aleatorio en las luces cuando están encendidas
+            setInterval(() => {
+                if (lightsOn) {
+                    windowLights.forEach(light => {
+                        if (Math.random() > 0.95) {
+                            const intensity = Math.random() * 0.3 + 0.1;
+                            light.style.backgroundColor = `rgba(255, 255, 0, ${intensity})`;
+                            light.style.boxShadow = `0 0 ${intensity * 20}px rgba(255, 255, 0, ${intensity * 2})`;
+                        }
+                    });
+                }
+            }, 300);
+            
+            // Simular datos de temperatura para el control climático
+            setInterval(() => {
+                if (climateOn) {
+                    const temp = (Math.random() * 2 + 21).toFixed(1);
+                    climateStatus.textContent = `${temp}°C`;
+                    
+                    // Actualizar estado en el plano
+                    document.querySelector('.room[data-room="kitchen"] .room-status').textContent = `Temperatura: ${temp}°C`;
+                }
+            }, 5000);
+            
+            // Actualizar datos meteorológicos cada 10 segundos
+            setInterval(updateWeatherData, 10000);
+            updateWeatherData();
+            
+            // Funcionalidad de los botones de navegación
+            const navButtons = document.querySelectorAll('.nav-button');
+            
+            navButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remover clase active de todos los botones
+                    navButtons.forEach(btn => btn.classList.remove('active'));
+                    // Añadir clase active al botón clickeado
+                    this.classList.add('active');
+                    
+                    // Aquí puedes agregar la lógica para cada botón
+                    if (this.id === 'inicioBtn') {
+                        console.log('Inicio clickeado');
+                    } else if (this.id === 'proyectoBtn') {
+                        console.log('Proyecto clickeado');
+                    } else if (this.id === 'contactosBtn') {
+                        console.log('Contactos clickeado');
+                    } else if (this.id === 'configBtn') {
+                        console.log('Configuración clickeado');
+                    }
+                });
+            });
+            
+            // Funcionalidad del plano de la casa
+            zoomInBtn.addEventListener('click', function() {
+                if (scale < 1.5) {
+                    scale += 0.1;
+                    floorPlan.style.transform = `scale(${scale})`;
+                }
+            });
+            
+            zoomOutBtn.addEventListener('click', function() {
+                if (scale > 0.7) {
+                    scale -= 0.1;
+                    floorPlan.style.transform = `scale(${scale})`;
+                }
+            });
+            
+            fullscreenBtn.addEventListener('click', function() {
+                if (!document.fullscreenElement) {
+                    floorPlan.requestFullscreen().catch(err => {
+                        console.error(`Error al intentar entrar en pantalla completa: ${err.message}`);
+                    });
+                } else {
+                    document.exitFullscreen();
+                }
+            });
+            
+            // Interacción con las habitaciones en el plano
+            const rooms = document.querySelectorAll('.room');
+            rooms.forEach(room => {
+                room.addEventListener('click', function() {
+                    const roomType = this.getAttribute('data-room');
+                    
+                    // Aquí puedes agregar lógica específica para cada habitación
+                    switch(roomType) {
+                        case 'living':
+                            toggleLightsBtn.click();
+                            break;
+                        case 'kitchen':
+                            toggleClimateBtn.click();
+                            break;
+                        case 'bedroom':
+                            toggleSecurityBtn.click();
+                            break;
+                        case 'bathroom':
+                            // Podrías agregar aquí la lógica para el baño
+                            break;
+                    }
+                });
+            });
+            
+            // Inicialización
+            updateLastUpdateTime();
+            updateEnergyUsage();
+        });
+
+// JavaScript mejorado para transición suave
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const loader = document.getElementById('loader');
+    const mainContent = document.getElementById('main-content');
+
+    // Animar salida del loader
+    loader.classList.add('fade-out');
+
+    // Animar entrada del contenido
+    mainContent.style.display = 'block'; // Necesario antes para que se anime
+    mainContent.classList.add('fade-in');
+
+    // Después que termine animación del loader, ocultar por completo
+    loader.addEventListener('animationend', () => {
+      loader.style.display = 'none';
+    });
+  }, 3000);
+});
+
+
+ 
+    </script>
+</body>
+</html>

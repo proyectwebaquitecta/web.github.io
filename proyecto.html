@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Herramienta Arquitectónica 3D Profesional</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --panel-width: 350px;
+            --toolbar-height: 60px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            overflow: hidden;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        #container3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Pantalla de carga */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--dark);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 1s ease-out;
+        }
+
+        #loading-screen p {
+            color: white;
+            margin-top: 20px;
+            font-size: 1.5rem;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .loader {
+            border: 8px solid rgba(255, 255, 255, 0.1);
+            border-top: 8px solid var(--accent);
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            animation: spin 1.5s linear infinite;
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Barra de herramientas superior */
+        #main-toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--toolbar-height);
+            background-color: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 50;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            color: var(--accent);
+        }
+
+        .main-tools {
+            display: flex;
+            gap: 10px;
+        }
+
+        .main-btn {
+            background-color: var(--light);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--dark);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .main-btn:hover {
+            background-color: var(--accent);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .main-btn i {
+            margin-right: 8px;
+        }
+
+        /* Panel de herramientas lateral */
+        #toolbar {
+            position: fixed;
+            top: var(--toolbar-height);
+            left: 0;
+            height: calc(100vh - var(--toolbar-height));
+            background-color: rgba(255, 255, 255, 0.98);
+            border-radius: 0 15px 0 0;
+            padding: 20px;
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 40;
+            width: var(--panel-width);
+            overflow-y: auto;
+            transform: translateX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .tool-section {
+            margin-bottom: 25px;
+        }
+
+        .tool-section h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .tool-section h3 i {
+            margin-right: 10px;
+            color: var(--accent);
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .tool-btn {
+            background-color: var(--light);
+            border: none;
+            padding: 15px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--dark);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .tool-btn:hover {
+            background-color: var(--accent);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+        }
+
+        .tool-btn.active {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .tool-btn i {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .slider-container {
+            margin: 20px 0;
+        }
+
+        .slider-container label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Panel de propiedades */
+        #property-panel {
+            position: fixed;
+            top: var(--toolbar-height);
+            right: 0;
+            height: calc(100vh - var(--toolbar-height));
+            background-color: rgba(255, 255, 255, 0.98);
+            border-radius: 15px 0 0 0;
+            padding: 20px;
+            box-shadow: -2px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 40;
+            width: var(--panel-width);
+            overflow-y: auto;
+            transform: translateX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .property-group {
+            margin-bottom: 25px;
+        }
+
+        .property-group h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .property-group h3 i {
+            margin-right: 10px;
+            color: var(--accent);
+        }
+
+        .property-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            align-items: center;
+        }
+
+        .property-row label {
+            font-size: 0.95rem;
+            color: var(--secondary);
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .property-row input, .property-row select {
+            width: 150px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .property-row input:focus, .property-row select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
+            outline: none;
+        }
+
+        .color-picker {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .color-picker:hover {
+            transform: scale(1.1);
+        }
+
+        /* Panel de información */
+        #info-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 15px 25px;
+            color: white;
+            z-index: 30;
+            font-size: 0.95rem;
+            display: flex;
+            gap: 25px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        #info-panel div {
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        #info-panel i {
+            margin-right: 8px;
+            color: var(--accent);
+        }
+
+        /* Modo medición */
+        .measurement-line {
+            position: absolute;
+            background-color: var(--accent);
+            height: 3px;
+            transform-origin: 0 0;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .measurement-label {
+            position: absolute;
+            background-color: var(--accent);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            transform: translateY(-50%);
+            z-index: 101;
+            pointer-events: none;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Selector de materiales */
+        .material-preview {
+            width: 100%;
+            height: 100px;
+            border-radius: 8px;
+            margin-top: 10px;
+            background-size: cover;
+            background-position: center;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+            border: 2px solid #eee;
+        }
+
+        /* Botones de toggle para paneles */
+        .panel-toggle {
+            position: fixed;
+            top: calc(var(--toolbar-height) + 20px);
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 45;
+            transition: all 0.3s;
+        }
+
+        .panel-toggle:hover {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        #left-panel-toggle {
+            left: 20px;
+        }
+
+        #right-panel-toggle {
+            right: 20px;
+        }
+
+        /* Efectos de selección */
+        .selection-box {
+            position: absolute;
+            background-color: rgba(52, 152, 219, 0.2);
+            border: 2px solid rgba(52, 152, 219, 0.8);
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        /* Botón de volver */
+        .mini-back-button {
+            width: 80px;
+            height: 80px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 0px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            position: fixed;
+            top: 0;
+            left: 0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            z-index: 60;
+        }
+
+        .mini-back-button:hover {
+            background-color: #45a049;
+        }
+
+        .mini-back-button h4 {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        /* Botones de diseño */
+        .contenedor {
+            margin: 15px 0;
+        }
+
+        .boton-cuadrado {
+            display: block;
+            padding: 10px;
+            background-color: var(--accent);
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .boton-cuadrado:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            :root {
+                --panel-width: 300px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            #toolbar, #property-panel {
+                transform: translateX(-100%);
+            }
+            
+            #property-panel {
+                transform: translateX(100%);
+            }
+            
+            #toolbar.visible {
+                transform: translateX(0);
+            }
+            
+            #property-panel.visible {
+                transform: translateX(0);
+            }
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+
+    
+    <!-- Barra de herramientas principal -->
+    <div id="main-toolbar">
+        <div class="logo">
+            <i class="fas fa-drafting-compass"></i>
+            <span>ArchiDesign 3D</span>
+        </div>
+        
+        <div class="main-tools">
+            <button class="mini-back-button" onclick="window.location.href='index.html'">
+                <h4>Volver atrás</h4>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Contenedor 3D -->
+    <div id="container3d"></div>
+    
+    <!-- Botones para mostrar/ocultar paneles -->
+    <div class="panel-toggle" id="left-panel-toggle">
+        <i class="fas fa-tools"></i>
+    </div>
+    
+    <div class="panel-toggle" id="right-panel-toggle">
+        <i class="fas fa-sliders-h"></i>
+    </div>
+    
+    <!-- Panel de herramientas lateral izquierdo -->
+    <div id="toolbar">
+        <div class="tool-section">
+            <h3><i class="fas fa-cubes"></i> Estructuras</h3>
+            <div class="tool-grid">
+                <button class="tool-btn" id="add-wall" title="Añadir muro">
+                    <i class="fas fa-wall"></i>
+                    Muro
+                </button>
+                <button class="tool-btn" id="add-column" title="Añadir columna">
+                    <i class="fas fa-columns"></i>
+                    Columna
+                </button>
+                <button class="tool-btn" id="add-floor" title="Añadir piso">
+                    <i class="fas fa-border-style"></i>
+                    Piso
+                </button>
+                <button class="tool-btn" id="add-door" title="Añadir puerta">
+                    <i class="fas fa-door-open"></i>
+                    Puerta
+                </button>
+                <button class="tool-btn" id="add-window" title="Añadir ventana">
+                    <i class="fas fa-window-maximize"></i>
+                    Ventana
+                </button>
+                <button class="tool-btn" id="add-stairs" title="Añadir escalera">
+                    <i class="fas fa-stairs"></i>
+                    Escalera
+                </button>
+                <button class="tool-btn" id="add-roof" title="Añadir techo">
+                    <i class="fas fa-home"></i>
+                    Techo
+                </button>
+                <button class="tool-btn" id="add-furniture" title="Añadir mueble">
+                    <i class="fas fa-couch"></i>
+                    Mueble
+                </button>
+                <button class="tool-btn" id="add-light" title="Añadir luz">
+                    <i class="fas fa-lightbulb"></i>
+                    Luz
+                </button>
+            </div>
+        </div>
+        
+        <div class="tool-section">
+            <h3><i class="fas fa-tools"></i> Herramientas</h3>
+            <div class="tool-grid">
+                <button class="tool-btn" id="select-tool" title="Herramienta de selección">
+                    <i class="fas fa-mouse-pointer"></i>
+                    Seleccionar
+                </button>
+                <button class="tool-btn" id="move-tool" title="Herramienta de mover">
+                    <i class="fas fa-arrows-alt"></i>
+                    Mover
+                </button>
+                <button class="tool-btn" id="rotate-tool" title="Herramienta de rotar">
+                    <i class="fas fa-sync-alt"></i>
+                    Rotar
+                </button>
+                <button class="tool-btn" id="scale-tool" title="Herramienta de escalar">
+                    <i class="fas fa-expand-alt"></i>
+                    Escalar
+                </button>
+                <button class="tool-btn" id="measure-tool" title="Herramienta de medición">
+                    <i class="fas fa-ruler-combined"></i>
+                    Medir
+                </button>
+                <button class="tool-btn" id="section-tool" title="Herramienta de corte">
+                    <i class="fas fa-cut"></i>
+                    Corte
+                </button>
+                <button class="tool-btn" id="sun-tool" title="Configurar luz solar">
+                    <i class="fas fa-sun"></i>
+                    Luz Solar
+                </button>
+                <button class="tool-btn" id="material-tool" title="Editor de materiales">
+                    <i class="fas fa-palette"></i>
+                    Materiales
+                </button>
+                <button class="tool-btn" id="camera-tool" title="Vistas de cámara">
+                    <i class="fas fa-camera"></i>
+                    Vistas
+                </button>
+            </div>
+        </div>
+        
+        <div class="tool-section">
+            <h3><i class="fas fa-layer-group"></i> Capas</h3>
+            <div class="slider-container">
+                <label>Opacidad de la rejilla:</label>
+                <input type="range" id="grid-opacity" min="0" max="100" value="80">
+            </div>
+            <div class="slider-container">
+                <label>Tamaño de la rejilla:</label>
+                <input type="range" id="grid-size" min="1" max="50" value="10">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Panel de propiedades lateral derecho -->
+    <div id="property-panel">
+        <div class="property-group">
+            <h3><i class="fas fa-cube"></i> Propiedades del Elemento</h3>
+            <div class="property-row">
+                <label>Nombre:</label>
+                <input type="text" id="element-name" value="Muro-001">
+            </div>
+            <div class="property-row">
+                <label>Altura (m):</label>
+                <input type="number" id="element-height" value="2.70" step="0.01" min="0.1">
+            </div>
+            <div class="property-row">
+                <label>Ancho (m):</label>
+                <input type="number" id="element-width" value="0.20" step="0.01" min="0.1">
+            </div>
+            <div class="property-row">
+                <label>Profundidad (m):</label>
+                <input type="number" id="element-depth" value="0.20" step="0.01" min="0.1">
+            </div>
+            <div class="property-row">
+                <label>Posición X:</label>
+                <input type="number" id="element-pos-x" value="0.00" step="0.01">
+            </div>
+            <div class="property-row">
+                <label>Posición Y:</label>
+                <input type="number" id="element-pos-y" value="0.00" step="0.01">
+            </div>
+            <div class="property-row">
+                <label>Posición Z:</label>
+                <input type="number" id="element-pos-z" value="0.00" step="0.01">
+            </div>
+            <div class="property-row">
+                <label>Rotación:</label>
+                <input type="number" id="element-rotation" value="0" step="1" min="0" max="360">
+            </div>
+            <div class="property-row">
+                <label>Material:</label>
+                <select id="element-material">
+                    <option>Hormigón</option>
+                    <option>Ladrillo</option>
+                    <option>Madera</option>
+                    <option>Vidrio</option>
+                    <option>Acero</option>
+                    <option>Cerámica</option>
+                    <option>Piedra</option>
+                    <option>Yeso</option>
+                </select>
+            </div>
+            <div class="property-row">
+                <label>Color:</label>
+                <input type="color" id="element-color" value="#cccccc">
+            </div>
+            <div class="property-row">
+                <label>Visible:</label>
+                <input type="checkbox" id="element-visible" checked>
+            </div>
+        </div>
+        
+        <div class="property-group">
+            <h3><i class="fas fa-project-diagram"></i> Configuración del Proyecto</h3>
+            <div class="property-row">
+                <label>Unidades:</label>
+                <select id="project-units">
+                    <option>Metros</option>
+                    <option>Centímetros</option>
+                    <option>Milímetros</option>
+                    <option>Pies</option>
+                    <option>Pulgadas</option>
+                </select>
+            </div>
+            <div class="property-row">
+                <label>Nivel actual:</label>
+                <select id="project-level">
+                    <option>Planta Baja</option>
+                    <option>Nivel 1 (+2.70m)</option>
+                    <option>Nivel 2 (+5.40m)</option>
+                    <option>Cubierta (+8.10m)</option>
+                    <option>Sótano (-2.70m)</option>
+                </select>
+            </div>
+            <div class="property-row">
+                <label>Mostrar rejilla:</label>
+                <input type="checkbox" id="show-grid" checked>
+            </div>
+            <div class="property-row">
+                <label>Mostrar ejes:</label>
+                <input type="checkbox" id="show-axes" checked>
+            </div>
+            <div class="property-row">
+                <label>Modo sombras:</label>
+                <input type="checkbox" id="show-shadows" checked>
+            </div>
+        </div>
+      
+       
+    
+    <!-- Panel de información inferior -->
+    <div id="info-panel">
+        <div><i class="fas fa-ruler-horizontal"></i> <span id="coord-x">X: 0.00</span></div>
+        <div><i class="fas fa-ruler-vertical"></i> <span id="coord-y">Y: 0.00</span></div>
+        <div><i class="fas fa-ruler"></i> <span id="coord-z">Z: 0.00</span></div>
+        <div><i class="fas fa-cube"></i> Elementos: <span id="element-count">0</span></div>
+        <div><i class="fas fa-layer-group"></i> Capa: <span id="current-layer">Planta Baja</span></div>
+        <div><i class="fas fa-mouse-pointer"></i> Modo: <span id="current-tool">Selección</span></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+    <script>
+        // Variables globales mejoradas
+        let scene, camera, renderer, controls, transformControls, gridHelper, axesHelper;
+        let objects = [];
+        let selectedObject = null;
+        let currentTool = 'select';
+        let isMeasuring = false;
+        let measurementPoints = [];
+        let measurementLines = [];
+        let raycaster = new THREE.Raycaster();
+        let mouse = new THREE.Vector2();
+        let clock = new THREE.Clock();
+        let sunLight, ambientLight;
+        let groundPlane;
+        let selectionBox = document.createElement('div');
+        selectionBox.className = 'selection-box';
+        document.body.appendChild(selectionBox);
+        selectionBox.style.display = 'none';
+        
+        // Materiales predefinidos
+        const materials = {
+            'Hormigón': { color: 0xcccccc, roughness: 0.8, metalness: 0.1 },
+            'Ladrillo': { color: 0xb35a45, roughness: 0.7, metalness: 0.1 },
+            'Madera': { color: 0x8b5a2b, roughness: 0.5, metalness: 0.0 },
+            'Vidrio': { color: 0x88ccee, roughness: 0.1, metalness: 0.3, transparent: true, opacity: 0.7 },
+            'Acero': { color: 0x999999, roughness: 0.4, metalness: 0.8 },
+            'Cerámica': { color: 0xe6d5b8, roughness: 0.3, metalness: 0.0 },
+            'Piedra': { color: 0x777777, roughness: 0.6, metalness: 0.1 },
+            'Yeso': { color: 0xeeeeee, roughness: 0.5, metalness: 0.0 }
+        };
+        
+        // Inicialización mejorada
+        function init() {
+            // 1. Configurar escena mejorada
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf0f5ff);
+            scene.fog = new THREE.FogExp2(0xf0f5ff, 0.001);
+            
+            // 2. Configurar cámara mejorada
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(15, 15, 15);
+            
+            // 3. Configurar renderizador mejorado
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                powerPreference: "high-performance"
+            });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            document.getElementById('container3d').appendChild(renderer.domElement);
+            
+            // 4. Controles de órbita mejorados
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.1;
+            controls.screenSpacePanning = true;
+            controls.maxPolarAngle = Math.PI * 0.9;
+            controls.minDistance = 1;
+            controls.maxDistance = 200;
+            
+            // 5. Controles de transformación
+            transformControls = new THREE.TransformControls(camera, renderer.domElement);
+            transformControls.addEventListener('dragging-changed', function(event) {
+                controls.enabled = !event.value;
+                updatePropertyPanel(selectedObject);
+            });
+            scene.add(transformControls);
+            
+            // 6. Configurar iluminación mejorada
+            setupLights();
+            
+            // 7. Configurar helpers y guías mejorados
+            setupHelpers();
+            
+            // 8. Configurar plano de trabajo mejorado
+            createGroundPlane();
+            
+            // 9. Configurar eventos mejorados
+            setupEventListeners();
+            
+            // 10. Ocultar pantalla de carga con mejor efecto
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('left-panel-toggle').classList.add('fade-in');
+                    document.getElementById('right-panel-toggle').classList.add('fade-in');
+                }, 800);
+            }, 2500);
+            
+            // 11. Iniciar animación
+            animate();
+            
+            // 12. Actualizar vista previa de materiales
+            updateMaterialPreview();
+        }
+        
+        function setupLights() {
+            // Luz ambiental mejorada
+            ambientLight = new THREE.AmbientLight(0x404040, 0.7);
+            scene.add(ambientLight);
+            
+            // Luz del sol (direccional) mejorada
+            sunLight = new THREE.DirectionalLight(0xfff9e6, 1.5);
+            sunLight.position.set(15, 25, 15);
+            sunLight.castShadow = true;
+            sunLight.shadow.mapSize.width = 4096;
+            sunLight.shadow.mapSize.height = 4096;
+            sunLight.shadow.camera.near = 0.5;
+            sunLight.shadow.camera.far = 500;
+            sunLight.shadow.camera.left = -50;
+            sunLight.shadow.camera.right = 50;
+            sunLight.shadow.camera.top = 50;
+            sunLight.shadow.camera.bottom = -50;
+            sunLight.shadow.bias = -0.001;
+            scene.add(sunLight);
+            
+            // Luz de relleno (hemisférica) mejorada
+            const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x666666, 0.5);
+            hemisphereLight.position.set(0, 20, 0);
+            scene.add(hemisphereLight);
+            
+            // Luz de relleno adicional
+            const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+            fillLight.position.set(-10, 10, -10);
+            scene.add(fillLight);
+        }
+        
+        function setupHelpers() {
+            // Rejilla mejorada
+            gridHelper = new THREE.GridHelper(50, 50, 0x888888, 0xdddddd);
+            gridHelper.position.y = 0.01;
+            scene.add(gridHelper);
+            
+            // Ejes mejorados
+            axesHelper = new THREE.AxesHelper(10);
+            scene.add(axesHelper);
+        }
+        
+        function createGroundPlane() {
+            const planeGeometry = new THREE.PlaneGeometry(200, 200);
+            const planeMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xeeeeee,
+                roughness: 0.8,
+                metalness: 0.1,
+                side: THREE.DoubleSide
+            });
+            groundPlane = new THREE.Mesh(planeGeometry, planeMaterial);
+            groundPlane.rotation.x = -Math.PI / 2;
+            groundPlane.receiveShadow = true;
+            groundPlane.userData.isGround = true;
+            scene.add(groundPlane);
+        }
+        
+        function addWall() {
+            const width = parseFloat(document.getElementById('element-width').value);
+            const height = parseFloat(document.getElementById('element-height').value);
+            const depth = parseFloat(document.getElementById('element-depth').value);
+            const materialName = document.getElementById('element-material').value;
+            const color = document.getElementById('element-color').value;
+            const materialSettings = materials[materialName] || {};
+            
+            const geometry = new THREE.BoxGeometry(width, height, depth);
+            const material = new THREE.MeshStandardMaterial({ 
+                color: new THREE.Color(color),
+                roughness: materialSettings.roughness || 0.4,
+                metalness: materialSettings.metalness || 0.1,
+                transparent: materialSettings.transparent || false,
+                opacity: materialSettings.opacity || 1.0
+            });
+            
+            const wall = new THREE.Mesh(geometry, material);
+            wall.castShadow = true;
+            wall.receiveShadow = true;
+            wall.position.set(0, height/2, 0);
+            wall.userData = {
+                type: 'wall',
+                name: `Muro-${objects.length + 1}`,
+                width: width,
+                height: height,
+                depth: depth,
+                material: materialName
+            };
+            
+            scene.add(wall);
+            objects.push(wall);
+            updateElementCount();
+            selectObject(wall);
+            
+            // Posicionar en el centro de la vista
+            const center = new THREE.Vector3();
+            camera.getWorldDirection(center);
+            center.multiplyScalar(10);
+            wall.position.copy(center);
+            wall.position.y = height/2;
+        }
+        
+        function addColumn() {
+            const diameter = parseFloat(document.getElementById('element-width').value);
+            const height = parseFloat(document.getElementById('element-height').value);
+            const materialName = document.getElementById('element-material').value;
+            const color = document.getElementById('element-color').value;
+            const materialSettings = materials[materialName] || {};
+            
+            const geometry = new THREE.CylinderGeometry(diameter/2, diameter/2, height, 16);
+            const material = new THREE.MeshStandardMaterial({ 
+                color: new THREE.Color(color),
+                roughness: materialSettings.roughness || 0.3,
+                metalness: materialSettings.metalness || 0.5,
+                transparent: materialSettings.transparent || false,
+                opacity: materialSettings.opacity || 1.0
+            });
+            
+            const column = new THREE.Mesh(geometry, material);
+            column.castShadow = true;
+            column.receiveShadow = true;
+            column.position.set(0, height/2, 0);
+            column.userData = {
+                type: 'column',
+                name: `Columna-${objects.length + 1}`,
+                diameter: diameter,
+                height: height,
+                material: materialName
+            };
+            
+            scene.add(column);
+            objects.push(column);
+            updateElementCount();
+            selectObject(column);
+            
+            // Posicionar en el centro de la vista
+            const center = new THREE.Vector3();
+            camera.getWorldDirection(center);
+            center.multiplyScalar(10);
+            column.position.copy(center);
+            column.position.y = height/2;
+        }
+        
+        function addFloor() {
+            const width = 5;
+            const depth = 5;
+            const thickness = parseFloat(document.getElementById('element-height').value);
+            const materialName = document.getElementById('element-material').value;
+            const color = document.getElementById('element-color').value;
+            const materialSettings = materials[materialName] || {};
+            
+            const geometry = new THREE.BoxGeometry(width, thickness, depth);
+            const material = new THREE.MeshStandardMaterial({ 
+                color: new THREE.Color(color),
+                roughness: materialSettings.roughness || 0.6,
+                metalness: materialSettings.metalness || 0.1,
+                transparent: materialSettings.transparent || false,
+                opacity: materialSettings.opacity || 1.0
+            });
+            
+            const floor = new THREE.Mesh(geometry, material);
+            floor.castShadow = true;
+            floor.receiveShadow = true;
+            floor.position.set(0, 0, 0);
+            floor.userData = {
+                type: 'floor',
+                name: `Piso-${objects.length + 1}`,
+                width: width,
+                depth: depth,
+                thickness: thickness,
+                material: materialName
+            };
+            
+            scene.add(floor);
+            objects.push(floor);
+            updateElementCount();
+            selectObject(floor);
+            
+            // Posicionar en el centro de la vista
+            const center = new THREE.Vector3();
+            camera.getWorldDirection(center);
+            center.multiplyScalar(10);
+            floor.position.copy(center);
+        }
+        
+        function addDoor() {
+            const width = 0.9;
+            const height = 2.1;
+            const depth = 0.1;
+            const materialName = document.getElementById('element-material').value;
+            const color = document.getElementById('element-color').value;
+            const materialSettings = materials[materialName] || {};
+            
+            const geometry = new THREE.BoxGeometry(width, height, depth);
+            const material = new THREE.MeshStandardMaterial({ 
+                color: new THREE.Color(color),
+                roughness: materialSettings.roughness || 0.5,
+                metalness: materialSettings.metalness || 0.2,
+                transparent: materialSettings.transparent || false,
+                opacity: materialSettings.opacity || 1.0
+            });
+            
+            const door = new THREE.Mesh(geometry, material);
+            door.castShadow = true;
+            door.receiveShadow = true;
+            door.position.set(0, height/2, 0);
+            door.userData = {
+                type: 'door',
+                name: `Puerta-${objects.length + 1}`,
+                width: width,
+                height: height,
+                depth: depth,
+                material: materialName
+            };
+            
+            scene.add(door);
+            objects.push(door);
+            updateElementCount();
+            selectObject(door);
+            
+            // Posicionar en el centro de la vista
+            const center = new THREE.Vector3();
+            camera.getWorldDirection(center);
+            center.multiplyScalar(10);
+            door.position.copy(center);
+            door.position.y = height/2;
+        }
+        
+        function selectObject(obj) {
+            // Deseleccionar el objeto actual
+            if (selectedObject) {
+                selectedObject.material.emissive.setHex(selectedObject.userData.originalEmissive || 0x000000);
+                transformControls.detach();
+            }
+            
+            // Seleccionar nuevo objeto
+            selectedObject = obj;
+            
+            if (obj) {
+                // Guardar color original
+                selectedObject.userData.originalEmissive = selectedObject.material.emissive.getHex();
+                
+                // Resaltar objeto seleccionado
+                selectedObject.material.emissive.setHex(0x444444);
+                
+                // Activar controles de transformación
+                transformControls.attach(obj);
+                transformControls.showX = true;
+                transformControls.showY = true;
+                transformControls.showZ = true;
+                
+                // Configurar controles según la herramienta actual
+                switch(currentTool) {
+                    case 'select':
+                        transformControls.setMode('translate');
+                        break;
+                    case 'move':
+                        transformControls.setMode('translate');
+                        break;
+                    case 'rotate':
+                        transformControls.setMode('rotate');
+                        break;
+                    case 'scale':
+                        transformControls.setMode('scale');
+                        break;
+                }
+                
+                // Actualizar panel de propiedades
+                updatePropertyPanel(obj);
+            } else {
+                // Desactivar controles de transformación
+                transformControls.detach();
+                
+                // Limpiar panel de propiedades
+                clearPropertyPanel();
+            }
+        }
+        
+        function updatePropertyPanel(obj) {
+            document.getElementById('element-name').value = obj.userData.name || `${obj.userData.type}-${objects.length}`;
+            
+            switch(obj.userData.type) {
+                case 'wall':
+                    document.getElementById('element-width').value = obj.userData.width;
+                    document.getElementById('element-height').value = obj.userData.height;
+                    document.getElementById('element-depth').value = obj.userData.depth;
+                    break;
+                case 'column':
+                    document.getElementById('element-width').value = obj.userData.diameter;
+                    document.getElementById('element-height').value = obj.userData.height;
+                    document.getElementById('element-depth').value = obj.userData.diameter;
+                    break;
+                case 'floor':
+                    document.getElementById('element-width').value = obj.userData.width;
+                    document.getElementById('element-height').value = obj.userData.thickness;
+                    document.getElementById('element-depth').value = obj.userData.depth;
+                    break;
+                case 'door':
+                    document.getElementById('element-width').value = obj.userData.width;
+                    document.getElementById('element-height').value = obj.userData.height;
+                    document.getElementById('element-depth').value = obj.userData.depth;
+                    break;
+            }
+            
+            document.getElementById('element-pos-x').value = obj.position.x.toFixed(2);
+            document.getElementById('element-pos-y').value = obj.position.y.toFixed(2);
+            document.getElementById('element-pos-z').value = obj.position.z.toFixed(2);
+            
+            // Calcular rotación en grados
+            const euler = new THREE.Euler().setFromQuaternion(obj.quaternion);
+            const degrees = THREE.MathUtils.radToDeg(euler.y);
+            document.getElementById('element-rotation').value = degrees.toFixed(0);
+            
+            document.getElementById('element-material').value = obj.userData.material || 'Hormigón';
+            document.getElementById('element-color').value = rgbToHex(obj.material.color);
+            document.getElementById('element-visible').checked = obj.visible;
+            
+            // Actualizar vista previa de material
+            updateMaterialPreview();
+        }
+        
+        function clearPropertyPanel() {
+            document.getElementById('element-name').value = '';
+            document.getElementById('element-width').value = '0.20';
+            document.getElementById('element-height').value = '2.70';
+            document.getElementById('element-depth').value = '0.20';
+            document.getElementById('element-pos-x').value = '0.00';
+            document.getElementById('element-pos-y').value = '0.00';
+            document.getElementById('element-pos-z').value = '0.00';
+            document.getElementById('element-rotation').value = '0';
+            document.getElementById('element-material').value = 'Hormigón';
+            document.getElementById('element-color').value = '#cccccc';
+            document.getElementById('element-visible').checked = true;
+        }
+        
+        function updateMaterialPreview() {
+            const materialName = document.getElementById('element-material').value;
+            const color = document.getElementById('element-color').value;
+            const preview = document.getElementById('material-preview');
+            
+            // Crear un gradiente o patrón según el material
+            switch(materialName) {
+                case 'Hormigón':
+                    preview.style.background = `linear-gradient(135deg, ${color} 0%, #aaaaaa 100%)`;
+                    break;
+                case 'Ladrillo':
+                    preview.style.background = color;
+                    preview.style.backgroundImage = `
+                        linear-gradient(135deg, rgba(0,0,0,0.1) 25%, transparent 25%),
+                        linear-gradient(225deg, rgba(0,0,0,0.1) 25%, transparent 25%),
+                        linear-gradient(315deg, rgba(0,0,0,0.1) 25%, transparent 25%),
+                        linear-gradient(45deg, rgba(0,0,0,0.1) 25%, transparent 25%)
+                    `;
+                    preview.style.backgroundSize = '20px 20px';
+                    break;
+                case 'Madera':
+                    preview.style.background = `
+                        repeating-linear-gradient(
+                            0deg,
+                            ${color},
+                            ${color} 10px,
+                            #${darkenHex(color, 20)} 10px,
+                            #${darkenHex(color, 20)} 20px
+                        )
+                    `;
+                    break;
+                case 'Vidrio':
+                    preview.style.background = `rgba(${hexToRgb(color)}, 0.7)`;
+                    preview.style.boxShadow = 'inset 0 0 20px rgba(255,255,255,0.5)';
+                    break;
+                case 'Acero':
+                    preview.style.background = `
+                        linear-gradient(
+                            135deg,
+                            ${color} 0%,
+                            #${lightenHex(color, 30)} 50%,
+                            ${color} 100%
+                        )
+                    `;
+                    break;
+                default:
+                    preview.style.background = color;
+            }
+        }
+        
+        function hexToRgb(hex) {
+            hex = hex.replace('#', '');
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            return `${r}, ${g}, ${b}`;
+        }
+        
+        function darkenHex(hex, percent) {
+            hex = hex.replace('#', '');
+            const num = parseInt(hex, 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) - amt;
+            const G = (num >> 8 & 0x00FF) - amt;
+            const B = (num & 0x0000FF) - amt;
+            
+            return (
+                0x1000000 +
+                (R < 0 ? 0 : R) * 0x10000 +
+                (G < 0 ? 0 : G) * 0x100 +
+                (B < 0 ? 0 : B)
+            ).toString(16).slice(1);
+        }
+        
+        function lightenHex(hex, percent) {
+            hex = hex.replace('#', '');
+            const num = parseInt(hex, 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            
+            return (
+                0x1000000 +
+                (R > 255 ? 255 : R) * 0x10000 +
+                (G > 255 ? 255 : G) * 0x100 +
+                (B > 255 ? 255 : B)
+            ).toString(16).slice(1);
+        }
+        
+        function rgbToHex(color) {
+            return "#" + ((1 << 24) + (Math.round(color.r * 255) << 16) + (Math.round(color.g * 255) << 8) + Math.round(color.b * 255)).toString(16).slice(1);
+        }
+        
+        function updateElementCount() {
+            document.getElementById('element-count').textContent = objects.length;
+        }
+        
+        function updateCoordinates() {
+            // Obtener posición del mouse en el mundo 3D
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObject(groundPlane);
+            
+            if (intersects.length > 0) {
+                const point = intersects[0].point;
+                document.getElementById('coord-x').textContent = `X: ${point.x.toFixed(2)}`;
+                document.getElementById('coord-y').textContent = `Y: ${point.y.toFixed(2)}`;
+                document.getElementById('coord-z').textContent = `Z: ${point.z.toFixed(2)}`;
+            }
+        }
+        
+        function startMeasuring() {
+            isMeasuring = true;
+            measurementPoints = [];
+            clearMeasurementLines();
+            document.body.style.cursor = "crosshair";
+            document.getElementById('current-tool').textContent = "Medición";
+            
+            // Deseleccionar cualquier objeto
+            selectObject(null);
+        }
+        
+        function clearMeasurementLines() {
+            measurementLines.forEach(line => {
+                if (line.element) document.body.removeChild(line.element);
+                if (line.label) document.body.removeChild(line.label);
+            });
+            measurementLines = [];
+        }
+        
+        function createMeasurementLine(point1, point2) {
+            // Calcular distancia
+            const distance = point1.distanceTo(point2);
+            
+            // Crear línea en el DOM
+            const lineElement = document.createElement('div');
+            lineElement.className = 'measurement-line';
+            
+            const labelElement = document.createElement('div');
+            labelElement.className = 'measurement-label';
+            labelElement.textContent = distance.toFixed(2) + ' m';
+            
+            document.body.appendChild(lineElement);
+            document.body.appendChild(labelElement);
+            
+            // Posicionar línea y etiqueta
+            updateMeasurementLinePosition(lineElement, labelElement, point1, point2, distance);
+            
+            return { element: lineElement, label: labelElement, point1: point1, point2: point2 };
+        }
+        
+        function updateMeasurementLinePosition(line, label, point1, point2, distance) {
+            // Convertir coordenadas 3D a pantalla
+            const screenPoint1 = point1.clone().project(camera);
+            const screenPoint2 = point2.clone().project(camera);
+            
+            // Convertir a coordenadas de pantalla
+            const x1 = (screenPoint1.x * 0.5 + 0.5) * window.innerWidth;
+            const y1 = (-screenPoint1.y * 0.5 + 0.5) * window.innerHeight;
+            const x2 = (screenPoint2.x * 0.5 + 0.5) * window.innerWidth;
+            const y2 = (-screenPoint2.y * 0.5 + 0.5) * window.innerHeight;
+            
+            // Calcular longitud y ángulo
+            const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+            
+            // Aplicar estilos
+            line.style.width = `${length}px`;
+            line.style.left = `${x1}px`;
+            line.style.top = `${y1}px`;
+            line.style.transform = `rotate(${angle}deg)`;
+            
+            // Posicionar etiqueta
+            const midX = (x1 + x2) / 2;
+            const midY = (y1 + y2) / 2;
+            
+            label.style.left = `${midX}px`;
+            label.style.top = `${midY}px`;
+        }
+        
+        function setupEventListeners() {
+            // Eventos de ratón
+            window.addEventListener('mousemove', onMouseMove, false);
+            window.addEventListener('click', onClick, false);
+            window.addEventListener('dblclick', onDoubleClick, false);
+            window.addEventListener('resize', onWindowResize, false);
+            
+            // Eventos de teclado
+            window.addEventListener('keydown', onKeyDown, false);
+            window.addEventListener('keyup', onKeyUp, false);
+            
+            // Botones de herramientas principales
+            document.getElementById('new-project').addEventListener('click', newProject);
+            document.getElementById('save-project').addEventListener('click', saveProject);
+            document.getElementById('import-btn').addEventListener('click', importProject);
+            document.getElementById('export-btn').addEventListener('click', exportProject);
+            
+            // Botones de herramientas de estructura
+            document.getElementById('add-wall').addEventListener('click', addWall);
+            document.getElementById('add-column').addEventListener('click', addColumn);
+            document.getElementById('add-floor').addEventListener('click', addFloor);
+            document.getElementById('add-door').addEventListener('click', addDoor);
+            
+            // Botones de herramientas de manipulación
+            document.getElementById('select-tool').addEventListener('click', () => setCurrentTool('select'));
+            document.getElementById('move-tool').addEventListener('click', () => setCurrentTool('move'));
+            document.getElementById('rotate-tool').addEventListener('click', () => setCurrentTool('rotate'));
+            document.getElementById('scale-tool').addEventListener('click', () => setCurrentTool('scale'));
+            document.getElementById('measure-tool').addEventListener('click', startMeasuring);
+            
+            // Controles de propiedades
+            document.getElementById('element-name').addEventListener('change', updateSelectedObject);
+            document.getElementById('element-width').addEventListener('change', updateSelectedObject);
+            document.getElementById('element-height').addEventListener('change', updateSelectedObject);
+            document.getElementById('element-depth').addEventListener('change', updateSelectedObject);
+            document.getElementById('element-pos-x').addEventListener('change', updateSelectedObject);
+            document.getElementById('element-pos-y').addEventListener('change', updateSelectedObject);
+            document.getElementById('element-pos-z').addEventListener('change', updateSelectedObject);
+            document.getElementById('element-rotation').addEventListener('change', updateSelectedObject);
+            document.getElementById('element-material').addEventListener('change', updateSelectedObject);
+            document.getElementById('element-color').addEventListener('change', updateSelectedObject);
+            document.getElementById('element-visible').addEventListener('change', updateSelectedObject);
+            
+            // Configuración del proyecto
+            document.getElementById('show-grid').addEventListener('change', function(e) {
+                gridHelper.visible = e.target.checked;
+            });
+            
+            document.getElementById('show-axes').addEventListener('change', function(e) {
+                axesHelper.visible = e.target.checked;
+            });
+            
+            document.getElementById('show-shadows').addEventListener('change', function(e) {
+                renderer.shadowMap.enabled = e.target.checked;
+                sunLight.castShadow = e.target.checked;
+                objects.forEach(obj => {
+                    obj.castShadow = e.target.checked;
+                    obj.receiveShadow = e.target.checked;
+                });
+            });
+            
+            // Toggle de paneles
+            document.getElementById('left-panel-toggle').addEventListener('click', function() {
+                document.getElementById('toolbar').classList.toggle('visible');
+            });
+            
+            document.getElementById('right-panel-toggle').addEventListener('click', function() {
+                document.getElementById('property-panel').classList.toggle('visible');
+            });
+        }
+        
+        function setCurrentTool(tool) {
+            currentTool = tool;
+            document.getElementById('current-tool').textContent = 
+                tool === 'select' ? 'Selección' :
+                tool === 'move' ? 'Mover' :
+                tool === 'rotate' ? 'Rotar' :
+                tool === 'scale' ? 'Escalar' : 'Selección';
+            
+            // Actualizar controles de transformación si hay un objeto seleccionado
+            if (selectedObject) {
+                switch(tool) {
+                    case 'select':
+                    case 'move':
+                        transformControls.setMode('translate');
+                        break;
+                    case 'rotate':
+                        transformControls.setMode('rotate');
+                        break;
+                    case 'scale':
+                        transformControls.setMode('scale');
+                        break;
+                }
+            }
+            
+            // Salir del modo de medición
+            if (isMeasuring && tool !== 'measure') {
+                isMeasuring = false;
+                clearMeasurementLines();
+                document.body.style.cursor = "";
+            }
+        }
+        
+        function updateSelectedObject() {
+            if (!selectedObject) return;
+            
+            // Actualizar propiedades del objeto
+            selectedObject.userData.name = document.getElementById('element-name').value;
+            selectedObject.userData.material = document.getElementById('element-material').value;
+            
+            // Actualizar propiedades geométricas según el tipo
+            switch(selectedObject.userData.type) {
+                case 'wall':
+                    selectedObject.scale.x = parseFloat(document.getElementById('element-width').value) / selectedObject.userData.width;
+                    selectedObject.scale.y = parseFloat(document.getElementById('element-height').value) / selectedObject.userData.height;
+                    selectedObject.scale.z = parseFloat(document.getElementById('element-depth').value) / selectedObject.userData.depth;
+                    selectedObject.position.y = parseFloat(document.getElementById('element-height').value) / 2;
+                    selectedObject.userData.width = parseFloat(document.getElementById('element-width').value);
+                    selectedObject.userData.height = parseFloat(document.getElementById('element-height').value);
+                    selectedObject.userData.depth = parseFloat(document.getElementById('element-depth').value);
+                    break;
+                    
+                case 'column':
+                    const newDiameter = parseFloat(document.getElementById('element-width').value);
+                    selectedObject.scale.x = newDiameter / selectedObject.userData.diameter;
+                    selectedObject.scale.z = newDiameter / selectedObject.userData.diameter;
+                    selectedObject.scale.y = parseFloat(document.getElementById('element-height').value) / selectedObject.userData.height;
+                    selectedObject.position.y = parseFloat(document.getElementById('element-height').value) / 2;
+                    selectedObject.userData.diameter = newDiameter;
+                    selectedObject.userData.height = parseFloat(document.getElementById('element-height').value);
+                    break;
+                    
+                case 'floor':
+                    selectedObject.scale.x = parseFloat(document.getElementById('element-width').value) / selectedObject.userData.width;
+                    selectedObject.scale.z = parseFloat(document.getElementById('element-depth').value) / selectedObject.userData.depth;
+                    selectedObject.scale.y = parseFloat(document.getElementById('element-height').value) / selectedObject.userData.thickness;
+                    selectedObject.userData.width = parseFloat(document.getElementById('element-width').value);
+                    selectedObject.userData.depth = parseFloat(document.getElementById('element-depth').value);
+                    selectedObject.userData.thickness = parseFloat(document.getElementById('element-height').value);
+                    break;
+                    
+                case 'door':
+                    selectedObject.scale.x = parseFloat(document.getElementById('element-width').value) / selectedObject.userData.width;
+                    selectedObject.scale.y = parseFloat(document.getElementById('element-height').value) / selectedObject.userData.height;
+                    selectedObject.scale.z = parseFloat(document.getElementById('element-depth').value) / selectedObject.userData.depth;
+                    selectedObject.position.y = parseFloat(document.getElementById('element-height').value) / 2;
+                    selectedObject.userData.width = parseFloat(document.getElementById('element-width').value);
+                    selectedObject.userData.height = parseFloat(document.getElementById('element-height').value);
+                    selectedObject.userData.depth = parseFloat(document.getElementById('element-depth').value);
+                    break;
+            }
+            
+            // Actualizar posición
+            selectedObject.position.x = parseFloat(document.getElementById('element-pos-x').value);
+            selectedObject.position.y = parseFloat(document.getElementById('element-pos-y').value);
+            selectedObject.position.z = parseFloat(document.getElementById('element-pos-z').value);
+            
+            // Actualizar rotación
+            const rotationDeg = parseFloat(document.getElementById('element-rotation').value);
+            const rotationRad = THREE.MathUtils.degToRad(rotationDeg);
+            selectedObject.rotation.y = rotationRad;
+            
+            // Actualizar color y material
+            const materialName = document.getElementById('element-material').value;
+            const materialSettings = materials[materialName] || {};
+            
+            selectedObject.material.color.set(document.getElementById('element-color').value);
+            selectedObject.material.roughness = materialSettings.roughness || 0.5;
+            selectedObject.material.metalness = materialSettings.metalness || 0.2;
+            
+            if (materialSettings.transparent !== undefined) {
+                selectedObject.material.transparent = materialSettings.transparent;
+            }
+            
+            if (materialSettings.opacity !== undefined) {
+                selectedObject.material.opacity = materialSettings.opacity;
+            }
+            
+            // Actualizar visibilidad
+            selectedObject.visible = document.getElementById('element-visible').checked;
+            
+            // Actualizar vista previa de material
+            updateMaterialPreview();
+        }
+        
+        function newProject() {
+            if (confirm('¿Estás seguro de que quieres crear un nuevo proyecto? Se perderán todos los cambios no guardados.')) {
+                // Eliminar todos los objetos excepto el plano de tierra y los helpers
+                objects.forEach(obj => {
+                    scene.remove(obj);
+                });
+                objects = [];
+                
+                // Restablecer controles
+                selectObject(null);
+                updateElementCount();
+                
+                // Restablecer cámara
+                camera.position.set(15, 15, 15);
+                controls.reset();
+                
+                alert('Nuevo proyecto creado.');
+            }
+        }
+        
+        function saveProject() {
+            alert('Función de guardar proyecto se implementará en una versión futura.');
+        }
+        
+        function importProject() {
+            alert('Función de importar proyecto se implementará en una versión futura.');
+        }
+        
+        function exportProject() {
+            alert('Función de exportar proyecto se implementará en una versión futura.');
+        }
+        
+        function onMouseMove(event) {
+            // Actualizar posición del mouse
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            // Actualizar coordenadas en el panel
+            updateCoordinates();
+            
+            // Modo selección con arrastre
+            if (currentTool === 'select' && event.buttons === 1 && !selectedObject) {
+                if (!selectionBox.style.display || selectionBox.style.display === 'none') {
+                    selectionBox.style.display = 'block';
+                    selectionBox.style.left = `${event.clientX}px`;
+                    selectionBox.style.top = `${event.clientY}px`;
+                    selectionBox.style.width = '0';
+                    selectionBox.style.height = '0';
+                } else {
+                    const x = parseInt(selectionBox.style.left);
+                    const y = parseInt(selectionBox.style.top);
+                    
+                    selectionBox.style.width = `${event.clientX - x}px`;
+                    selectionBox.style.height = `${event.clientY - y}px`;
+                }
+            }
+            
+            // Actualizar posición de las líneas de medición temporales
+            if (isMeasuring && measurementPoints.length === 1) {
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObject(groundPlane);
+                
+                if (intersects.length > 0) {
+                    const tempLine = createMeasurementLine(measurementPoints[0], intersects[0].point);
+                    clearMeasurementLines();
+                    measurementLines.push(tempLine);
+                }
+            }
+            
+            // Actualizar líneas de medición existentes
+            measurementLines.forEach(line => {
+                const point1 = line.point1;
+                const point2 = line.point2;
+                const distance = point1.distanceTo(point2);
+                updateMeasurementLinePosition(line.element, line.label, point1, point2, distance);
+            });
+        }
+        
+        function onClick(event) {
+            // Si estamos en modo medición
+            if (isMeasuring) {
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObject(groundPlane);
+                
+                if (intersects.length > 0) {
+                    measurementPoints.push(intersects[0].point.clone());
+                    
+                    if (measurementPoints.length === 2) {
+                        const line = createMeasurementLine(measurementPoints[0], measurementPoints[1]);
+                        measurementLines.push(line);
+                        
+                        measurementPoints = [];
+                    }
+                }
+                return;
+            }
+            
+            // Si no hay objeto seleccionado y no estamos en modo medición
+            if (!selectedObject && currentTool !== 'measure') {
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(objects);
+                
+                if (intersects.length > 0) {
+                    selectObject(intersects[0].object);
+                } else {
+                    selectObject(null);
+                }
+            }
+        }
+        
+        function onDoubleClick(event) {
+            if (selectedObject) {
+                // Centrar la cámara en el objeto seleccionado
+                controls.target.copy(selectedObject.position);
+                camera.position.sub(controls.target);
+                controls.target.copy(selectedObject.position);
+                
+                // Ajustar la distancia de la cámara según el tamaño del objeto
+                let size = new THREE.Vector3();
+                selectedObject.geometry.computeBoundingBox();
+                selectedObject.geometry.boundingBox.getSize(size);
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const distance = maxDim * 2;
+                
+                camera.position.set(0, 0, distance).add(controls.target);
+                controls.update();
+            }
+        }
+        
+        function onKeyDown(event) {
+            // Tecla Suprimir para eliminar objeto seleccionado
+            if (event.key === 'Delete' && selectedObject) {
+                scene.remove(selectedObject);
+                objects = objects.filter(obj => obj !== selectedObject);
+                selectObject(null);
+                updateElementCount();
+            }
+            
+            // Tecla Escape para cancelar medición
+            if (event.key === 'Escape' && isMeasuring) {
+                isMeasuring = false;
+                clearMeasurementLines();
+                document.body.style.cursor = "";
+                document.getElementById('current-tool').textContent = "Selección";
+            }
+        }
+        
+        function onKeyUp(event) {
+            // Puedes añadir funcionalidades adicionales aquí
+        }
+        
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Actualizar controles
+            controls.update();
+            
+            // Actualizar posición del sol (animación)
+            const time = clock.getElapsedTime();
+            sunLight.position.x = Math.cos(time * 0.05) * 30;
+            sunLight.position.z = Math.sin(time * 0.05) * 30;
+            
+            // Renderizar escena
+            renderer.render(scene, camera);
+        }
+        
+        // Iniciar la aplicación
+        init();
+    </script>
+</body>
+</html>
